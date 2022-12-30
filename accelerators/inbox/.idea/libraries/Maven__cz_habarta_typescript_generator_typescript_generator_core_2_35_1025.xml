@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: cz.habarta.typescript-generator:typescript-generator-core:2.35.1025">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/cz/habarta/typescript-generator/typescript-generator-core/2.35.1025/typescript-generator-core-2.35.1025.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/cz/habarta/typescript-generator/typescript-generator-core/2.35.1025/typescript-generator-core-2.35.1025-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/cz/habarta/typescript-generator/typescript-generator-core/2.35.1025/typescript-generator-core-2.35.1025-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
