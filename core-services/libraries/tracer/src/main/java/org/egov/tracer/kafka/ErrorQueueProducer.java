@@ -25,6 +25,7 @@ public class ErrorQueueProducer {
 
     public void sendMessage(ErrorQueueContract errorQueueContract) {
         try {
+            log.info("Sending message to topic - " + tracerProperties.getErrorsTopic());
             kafkaTemplate.send(tracerProperties.getErrorsTopic(), errorQueueContract);
         } catch (SerializationException serializationException) {
             log.info("SerializationException exception occurred while sending exception to error queue");

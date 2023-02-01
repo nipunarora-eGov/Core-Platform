@@ -180,6 +180,117 @@ public class ExceptionAdvise {
         return new ResponseEntity<>(errorRes, HttpStatus.BAD_REQUEST);
     }
 
+    public void exceptionHandler(List<ErrorDetail> errorDetails) {
+
+        errorDetails.forEach(errorDetail -> {
+
+            String body = errorDetail.getApiDetails().getRequestBody();
+            String requestURL = errorDetail.getApiDetails().getUrl();
+            String contentType = errorDetail.getApiDetails().getContentType();
+            Boolean isJsonContentType = (contentType != null && contentType.toLowerCase().contains("application/json"));
+
+            ErrorRes errorRes = new ErrorRes();
+            List<Error> errors = new ArrayList<>();
+
+            errorDetail.getErrors().forEach(errorEntity -> {
+                Exception ex = errorEntity.getException();
+                try {
+                    if (ex instanceof HttpMediaTypeNotSupportedException) {
+                        errorRes.setErrors(new ArrayList<>(Collections.singletonList(new Error("UnsupportedMediaType", "An " +
+                                "unsupported media Type was used - " + contentType, null, null))));
+                    } else if (ex instanceof ResourceAccessException) {
+                        Error err = new Error();
+                        err.setCode("ResourceAccessError");
+                        err.setMessage("An error occurred while accessing a underlying resource");
+                        errors.add(err);
+                        errorRes.setErrors(errors);
+                    } else if (ex instanceof HttpMessageNotReadableException) {
+                        Error err = new Error();
+                        String message = ex.getMessage();
+
+                        if (ex.getCause() instanceof JsonMappingException) {
+
+                            Pattern pattern = Pattern.compile("(.+)Can not deserialize instance of ([a-z]+\\.){1,}(?<objecttype>[^ ]+).*\\[\"(?<objectname>[^\"]+)\"\\].*",
+                                    Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+                            Matcher match = pattern.matcher(message);
+                            boolean matched = match.find();
+                            if (matched) {
+                                err.setMessage("Failed to parse field - " + match.group("objectname") + ". Expected type is " + match.group("objecttype"));
+                            } else {
+                                err.setMessage("Failed to deserialize certain JSON fields");
+                            }
+
+                            err.setCode("JsonMappingException");
+
+                        } else if (ex.getCause() instanceof JsonParseException) {
+                            err.setCode("JsonParseException");
+                            message = ex.getCause().getMessage().replaceAll("Source: [^;]+; ", "").replaceAll(" \\(code \\d+\\)", "").replaceAll("\\n", "");
+                            err.setMessage(message);
+                        } else {
+                            try {
+                                err.setMessage("JSON body has errors or is missing");
+                                JsonPath.parse(body).json();
+                            } catch (Exception jsonParseException) {
+                                log.error("Error while parsing JSON", jsonParseException);
+                            }
+                            err.setCode("MissingJsonException");
+                        }
+                        errors.add(err);
+                        errorRes.setErrors(errors);
+                    } else if (ex instanceof MethodArgumentNotValidException) {
+                        MethodArgumentNotValidException argumentNotValidException = (MethodArgumentNotValidException) ex;
+                        errorRes.setErrors(getBindingErrors(argumentNotValidException.getBindingResult(), errors));
+
+                    } else if (ex instanceof CustomBindingResultExceprion) {
+                        CustomBindingResultExceprion customBindingResultExceprion = (CustomBindingResultExceprion) ex;
+                        errorRes.setErrors(getBindingErrors(customBindingResultExceprion.getBindingResult(), errors));
+                    } else if (ex instanceof CustomException) {
+                        CustomException customException = (CustomException) ex;
+                        populateCustomErrors(customException, errors);
+                        errorRes.setErrors(errors);
+                    } else if (ex instanceof ServiceCallException) {
+                        sendErrorMessage(body, ex, requestURL, errorRes, isJsonContentType);
+                    } else if (ex instanceof MissingServletRequestParameterException) {
+                        MissingServletRequestParameterException exception = (MissingServletRequestParameterException) ex;
+                        Error error = new Error();
+                        error.setCode("");
+                        error.setMessage(exception.getMessage());
+                        //error.setDescription(exception.getCause().toString());
+                        List<String> params = new ArrayList<>();
+                        params.add(exception.getParameterName());
+                        error.setParams(params);
+                        errors.add(error);
+                        errorRes.setErrors(errors);
+                    } else if (ex instanceof BindException) {
+                        BindException bindException = (BindException) ex;
+
+                        errorRes.setErrors(getBindingErrors(bindException.getBindingResult(), errors));
+
+                        //errorRes.setErrors(errors);
+                    }
+
+                    String exceptionName = ex.getClass().getSimpleName();
+                    String exceptionMessage = ex.getMessage();
+
+                    if (errorRes.getErrors() == null || errorRes.getErrors().size() == 0) {
+                        errorRes.setErrors(new ArrayList<>(Collections.singletonList(new Error(exceptionName, "An unhandled exception occurred on the server", exceptionMessage, null))));
+                    } else if (provideExceptionInDetails && errorRes.getErrors() != null && errorRes.getErrors().size() > 0) {
+                        StringWriter sw = new StringWriter();
+                        errorRes.getErrors().get(0).setDescription(sw.toString());
+                    }
+
+                    sendErrorMessage(body, ex, requestURL, errorRes, isJsonContentType);
+                } catch (Exception tracerException) {
+                    log.error("Error in tracer", tracerException);
+                    errorRes.setErrors(new ArrayList<>(Collections.singletonList(new Error("TracerException", "An unhandled exception occurred in tracer handler", null, null))));
+                }
+            });
+
+        });
+
+    }
+
+
     private List<Error> getBindingErrors(BindingResult bindingResult, List<Error> errors) {
 
         List<ObjectError> objectErrors = bindingResult.getAllErrors();
@@ -240,9 +351,18 @@ public class ExceptionAdvise {
                     .message(ex.getMessage())
                     .build();
 
+            enrichErrorQueueRecord(errorQueueContract);
+
             errorQueueProducer.sendMessage(errorQueueContract);
         }
 
+    }
+
+    private void enrichErrorQueueRecord(ErrorQueueContract errorQueueContract) {
+        errorQueueContract.getErrorRes().getErrors().forEach(error -> {
+            error.setParentId(errorQueueContract.getId());
+            error.setId(UUID.randomUUID().toString());
+        });
     }
 
 }
