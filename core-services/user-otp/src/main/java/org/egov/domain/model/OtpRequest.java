@@ -3,7 +3,6 @@ package org.egov.domain.model;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.domain.exception.InvalidOtpRequestException;
-import org.egov.web.contract.RequestInfo;
 
 import static org.springframework.util.StringUtils.isEmpty;
 
@@ -13,8 +12,6 @@ import static org.springframework.util.StringUtils.isEmpty;
 @EqualsAndHashCode
 @NoArgsConstructor
 public class OtpRequest {
-
-	private RequestInfo requestInfo;
 	@Setter
     private String mobileNumber;
     private String tenantId;

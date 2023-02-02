@@ -5,16 +5,13 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import java.util.Set;
-
 @AllArgsConstructor
 @Getter
 @Builder
 @EqualsAndHashCode
-public class Email {
-
-	private Set<String> emailTo;
+public class EmailMessage {
+	private String email;
 	private String subject;
 	private String body;
-
+	private String sender;
 }
