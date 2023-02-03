@@ -99,7 +99,7 @@ public class OtpRepositoryTest {
         server.expect(once(), requestTo("http://otp-host.com/otp/_search")).andExpect(method(HttpMethod.POST))
                 .andExpect(content().string(new Resources().getFileContents("otpSearchSuccessRequest.json")))
                 .andRespond(withSuccess(new Resources().getFileContents("otpSearchIdentityDifferentResponse.json"),
-                        MediaType.APPLICATION_JSON_UTF8));
+                        MediaType.APPLICATION_JSON));
         final OtpValidationRequest request = buildRequest();
 
         boolean isOtpValidated = otpRepository.isOtpValidationComplete(request);

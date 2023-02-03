@@ -388,7 +388,7 @@ public class UserControllerTest {
         }
     }
 
-    class UserSearchMatcher extends ArgumentMatcher<UserSearchCriteria> {
+    class UserSearchMatcher implements ArgumentMatcher<UserSearchCriteria> {
 
         private UserSearchCriteria expectedUserSearch;
 
@@ -397,8 +397,7 @@ public class UserControllerTest {
         }
 
         @Override
-        public boolean matches(Object o) {
-            UserSearchCriteria userSearch = (UserSearchCriteria) o;
+        public boolean matches(UserSearchCriteria userSearch) {
             return userSearch.getId().equals(expectedUserSearch.getId()) &&
                     userSearch.getUserName().equals(expectedUserSearch.getUserName()) &&
                     userSearch.getName().equals(expectedUserSearch.getName()) &&
@@ -414,9 +413,10 @@ public class UserControllerTest {
                     userSearch.getSort().equals(expectedUserSearch.getSort()) &&
                     userSearch.getType().equals(expectedUserSearch.getType());
         }
+
     }
 
-    class UserSearchActiveFlagMatcher extends ArgumentMatcher<UserSearchCriteria> {
+    class UserSearchActiveFlagMatcher implements ArgumentMatcher<UserSearchCriteria> {
 
         private UserSearchCriteria expectedUserSearch;
 
@@ -425,8 +425,7 @@ public class UserControllerTest {
         }
 
         @Override
-        public boolean matches(Object o) {
-            UserSearchCriteria userSearch = (UserSearchCriteria) o;
+        public boolean matches(UserSearchCriteria userSearch) {
             return userSearch.getActive() == expectedUserSearch.getActive();
         }
     }

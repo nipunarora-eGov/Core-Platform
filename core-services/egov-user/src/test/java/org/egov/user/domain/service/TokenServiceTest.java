@@ -45,7 +45,6 @@ public class TokenServiceTest {
         SecureUser secureUser = new SecureUser(getUser());
         when(oAuth2Authentication.getPrincipal()).thenReturn(secureUser);
         final List<Action> expectedActions = getActions();
-        when(actionRestRepository.getActionByRoleCodes(getRoleCodes(), "default")).thenReturn(expectedActions);
         UserDetail actualUserDetails = tokenService.getUser(accessToken);
 
         assertEquals(secureUser, actualUserDetails.getSecureUser());
