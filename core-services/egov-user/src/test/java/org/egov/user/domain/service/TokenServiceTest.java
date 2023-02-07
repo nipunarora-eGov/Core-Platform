@@ -22,8 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TokenServiceTest {
@@ -45,6 +44,7 @@ public class TokenServiceTest {
         SecureUser secureUser = new SecureUser(getUser());
         when(oAuth2Authentication.getPrincipal()).thenReturn(secureUser);
         final List<Action> expectedActions = getActions();
+        lenient().when(actionRestRepository.getActionByRoleCodes(getRoleCodes(), "default")).thenReturn(expectedActions);
         UserDetail actualUserDetails = tokenService.getUser(accessToken);
 
         assertEquals(secureUser, actualUserDetails.getSecureUser());
