@@ -102,7 +102,7 @@ public class EgovUserApplication {
     @Bean
     public JedisConnectionFactory connectionFactory() {
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(host);
-        return new JedisConnectionFactory();
+        return new JedisConnectionFactory(redisStandaloneConfiguration);
     }
 
     public static void main(String[] args) {
