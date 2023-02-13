@@ -326,7 +326,13 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "core-services/egov-url-shortening/src/main/resources/db"
         image-name: "egov-url-shortening-db"
-  
+
+  - name: "builds/Core-Platform/core-services/error-retry-consumer-pipeline"
+    build:
+      - work-dir: "core-services/egov-url-shortening"
+        image-name: "egov-url-shortening"
+        dockerfile: "build/maven/Dockerfile"
+
   - name: "builds/Core-Platform/core-services/chatbot"
     build:
       - work-dir: "core-services/chatbot"
