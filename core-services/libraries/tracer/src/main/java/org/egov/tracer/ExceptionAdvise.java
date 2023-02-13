@@ -279,7 +279,7 @@ public class ExceptionAdvise {
                         errorRes.getErrors().get(0).setDescription(sw.toString());
                     }
 
-                    sendErrorMessage(body, ex, requestURL, errorRes, isJsonContentType);
+                    sendErrorMessage(body, ex, requestURL, errorRes, isJsonContentType, errorEntity.getErrorType());
                 } catch (Exception tracerException) {
                     log.error("Error in tracer", tracerException);
                     errorRes.setErrors(new ArrayList<>(Collections.singletonList(new Error("TracerException", "An unhandled exception occurred in tracer handler", null, null))));
@@ -351,18 +351,40 @@ public class ExceptionAdvise {
                     .message(ex.getMessage())
                     .build();
 
-            enrichErrorQueueRecord(errorQueueContract);
-
             errorQueueProducer.sendMessage(errorQueueContract);
         }
 
     }
 
-    private void enrichErrorQueueRecord(ErrorQueueContract errorQueueContract) {
-        errorQueueContract.getErrorRes().getErrors().forEach(error -> {
-            error.setParentId(errorQueueContract.getId());
-            error.setId(UUID.randomUUID().toString());
-        });
+    void sendErrorMessage(String body, Exception ex, String source, ErrorRes errorRes, boolean isJsonContentType, ErrorType errorType) {
+        DocumentContext documentContext;
+
+        Object requestBody = body;
+        if (isJsonContentType) {
+            try {
+                documentContext = JsonPath.parse(body);
+                requestBody = documentContext.json();
+            } catch (Exception exception) {
+                requestBody = body;
+            }
+        }
+
+        StackTraceElement elements[] = ex.getStackTrace();
+
+        ErrorQueueContractDTO errorQueueContractDTO = new ErrorQueueContractDTO();
+        errorQueueContractDTO.setId(UUID.randomUUID().toString());
+        errorQueueContractDTO.setCorrelationId(MDC.get(CORRELATION_ID_MDC));
+        errorQueueContractDTO.setBody(requestBody);
+        errorQueueContractDTO.setSource(source);
+        errorQueueContractDTO.setTs(new Date().getTime());
+        errorQueueContractDTO.setErrorRes(errorRes);
+        errorQueueContractDTO.setException(Arrays.asList(elements));
+        errorQueueContractDTO.setMessage(ex.getMessage());
+        errorQueueContractDTO.setRetryCount(0);
+        errorQueueContractDTO.setErrorType(errorType);
+        errorQueueContractDTO.setStatus(Status.UNSUCCESSFUL);
+
+        errorQueueProducer.sendMessage(errorQueueContractDTO);
     }
 
 }
