@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.egov.errorretryconsumerpipeline.models.ErrorRetryRequest;
 import org.egov.errorretryconsumerpipeline.producer.Producer;
 import org.egov.errorretryconsumerpipeline.repository.ServiceRequestRepository;
+import org.egov.errorretryconsumerpipeline.repository.querybuilder.QueryBuilder;
 import org.egov.errorretryconsumerpipeline.validators.ErrorRetryValidator;
 import org.egov.tracer.model.ErrorQueueContractDTO;
 import org.egov.tracer.model.Status;
@@ -39,11 +40,8 @@ public class ErrorRetryService {
     @Autowired
     private Producer producer;
 
-    @Value("${egov.es.host}")
-    private String esHost;
-
-    @Value("${egov.error.index}")
-    private String errorIndex;
+    @Autowired
+    private QueryBuilder queryBuilder;
 
     @Value("${error.queue.kafka.topic}")
     private String errorTopic;
@@ -51,8 +49,8 @@ public class ErrorRetryService {
     public ResponseEntity attemptErrorRetry(ErrorRetryRequest errorRetryRequest){
 
         // Route request to ES to search for the error entry
-        Object request = prepareRequestBodyForESSearch(errorRetryRequest.getId());
-        Object response = serviceRequestRepository.fetchResult(getErrorIndexEsUri(), request);
+        Object request = queryBuilder.prepareRequestBodyForESSearch(errorRetryRequest.getId());
+        Object response = serviceRequestRepository.fetchResult(queryBuilder.getErrorIndexEsUri(), request);
         
         List<ErrorQueueContractDTO> listOfErrorObjects = objectMapper.convertValue(JsonPath.read(response, DATA_JSONPATH), List.class);
         ErrorQueueContractDTO errorObject = objectMapper.convertValue(listOfErrorObjects.get(0), ErrorQueueContractDTO.class);
@@ -85,21 +83,5 @@ public class ErrorRetryService {
         Integer retryCount = errorObject.getRetryCount();
         retryCount = retryCount + 1;
         errorObject.setRetryCount(retryCount);
-    }
-
-    private Object prepareRequestBodyForESSearch(String id) {
-        Map<String, Object> request = new HashMap<>();
-
-        request.put(QUERY, new HashMap<>());
-        Map<String, Object> queryClause = (Map<String, Object>) request.get(QUERY);
-        queryClause.put(IDS, new HashMap<>());
-        Map<String, Object> idsClause = (Map<String, Object>) queryClause.get(IDS);
-        idsClause.put(VALUES, Collections.singletonList(id));
-
-        return  request;
-    }
-
-    private StringBuilder getErrorIndexEsUri(){
-        return new StringBuilder(esHost).append(errorIndex).append(SEARCH_ENDPOINT);
     }
 }
