@@ -34,7 +34,9 @@ public class RequestInfo {
 
     private User userInfo;
 
+    // Request URI is being added to requestInfo to aid in understanding the request source in case of async consumers like persister and indexer
     private String requestUri;
 
+    // Content type is being added to requestInfo to aid in understanding the content type in case of async consumers like persister and indexer
     private String contentType;
 }
