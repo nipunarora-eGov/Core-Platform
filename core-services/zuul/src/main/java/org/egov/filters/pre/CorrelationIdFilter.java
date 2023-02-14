@@ -1,26 +1,21 @@
 package org.egov.filters.pre;
 
 import static java.util.Objects.isNull;
-import static org.egov.constants.RequestContextConstants.CORRELATION_ID_KEY;
-import static org.egov.constants.RequestContextConstants.REQUEST_INFO_FIELD_NAME_CAMEL_CASE;
-import static org.egov.constants.RequestContextConstants.REQUEST_INFO_FIELD_NAME_PASCAL_CASE;
-import static org.egov.constants.RequestContextConstants.REQUEST_TENANT_ID_KEY;
-import static org.egov.constants.RequestContextConstants.TENANTID_MDC;
+import static org.egov.Utils.Utils.isRequestBodyCompatible;
+import static org.egov.constants.RequestContextConstants.*;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.commons.io.IOUtils;
 import org.egov.Utils.Utils;
 import org.egov.common.utils.MultiStateInstanceUtil;
 import org.egov.exceptions.CustomException;
+import org.egov.model.RequestBodyInspector;
+import org.egov.wrapper.CustomRequestWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -41,6 +36,12 @@ import com.netflix.zuul.context.RequestContext;
 public class CorrelationIdFilter extends ZuulFilter {
 	
     private static final String RECEIVED_REQUEST_MESSAGE = "Received request for: {}";
+    private static final String FAILED_TO_ENRICH_REQUEST_BODY_MESSAGE = "Failed to enrich request body";
+    private static final String SKIPPED_BODY_ENRICHMENT_DUE_TO_NO_KNOWN_FIELD_MESSAGE =
+        "Skipped enriching request body since request info field is not present.";
+    private static final String BODY_ENRICHED_MESSAGE = "Enriched request payload.";
+    public static final String REQUEST_URI_FIELD_NAME = "requestUri";
+    public static final String CONTENT_TYPE_FIELD_NAME = "contentType";
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     
@@ -83,6 +84,7 @@ public class CorrelationIdFilter extends ZuulFilter {
         RequestContext ctx = RequestContext.getCurrentContext();
         
         String requestURI = ctx.getRequest().getRequestURI();
+        String contentType = ctx.getRequest().getContentType();
         Boolean isOpenRequest = openEndpointsWhitelist.contains(requestURI);
         Boolean isMixModeRequest = mixedModeEndpointsWhitelist.contains(requestURI);
         
@@ -107,10 +109,59 @@ public class CorrelationIdFilter extends ZuulFilter {
         MDC.put(CORRELATION_ID_KEY, correlationId);
         ctx.set(CORRELATION_ID_KEY, correlationId);
         logger.debug(RECEIVED_REQUEST_MESSAGE, ctx.getRequest().getRequestURI());
+        enrichApiDetailsInRequest(requestURI, contentType);
         return null;
     }
-    
-	private Set<String> getTenantIdsFromRequest() throws CustomException {
+
+    private void enrichApiDetailsInRequest(String requestUri, String contentType) {
+        if (!isRequestBodyCompatible(RequestContext.getCurrentContext().getRequest())) {
+            return;
+        }
+        try {
+            enrichRequestBody(requestUri, contentType);
+        } catch (IOException e) {
+            logger.error(FAILED_TO_ENRICH_REQUEST_BODY_MESSAGE, e);
+            throw new org.egov.tracer.model.CustomException("FAILED_TO_ENRICH_REQUEST_BODY", e.getMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void enrichRequestBody(String requestUri, String contentType) throws IOException {
+        RequestContext ctx = RequestContext.getCurrentContext();
+        final RequestBodyInspector requestBodyInspector = getRequestBodyInspector(ctx);
+        HashMap<String, Object> requestInfo = requestBodyInspector.getRequestInfo();
+        if (requestInfo == null) {
+            logger.info(SKIPPED_BODY_ENRICHMENT_DUE_TO_NO_KNOWN_FIELD_MESSAGE);
+            return;
+        }
+        setRequestUri(requestInfo, requestUri);
+        setContentType(requestInfo, contentType);
+        requestBodyInspector.updateRequestInfo(requestInfo);
+        CustomRequestWrapper requestWrapper = new CustomRequestWrapper(ctx.getRequest());
+        requestWrapper.setPayload(objectMapper.writeValueAsString(requestBodyInspector.getRequestBody()));
+        logger.info(BODY_ENRICHED_MESSAGE);
+        ctx.setRequest(requestWrapper);
+    }
+
+    private RequestBodyInspector getRequestBodyInspector(RequestContext ctx) throws IOException {
+        HashMap<String, Object> requestBody = getRequestBody(ctx);
+        return new RequestBodyInspector(requestBody);
+    }
+
+    private HashMap<String, Object> getRequestBody(RequestContext ctx) throws IOException {
+        String payload = IOUtils.toString(ctx.getRequest().getInputStream());
+        return objectMapper.readValue(payload, new TypeReference<HashMap<String, Object>>() { });
+    }
+
+    private void setRequestUri(HashMap<String, Object> requestInfo, String requestUri) {
+        requestInfo.put(REQUEST_URI_FIELD_NAME, requestUri);
+    }
+
+    private void setContentType(HashMap<String, Object> requestInfo, String contentType) {
+	    requestInfo.put(CONTENT_TYPE_FIELD_NAME, contentType);
+    }
+
+    private Set<String> getTenantIdsFromRequest() throws CustomException {
 
 		RequestContext ctx = RequestContext.getCurrentContext();
 		HttpServletRequest request = ctx.getRequest();

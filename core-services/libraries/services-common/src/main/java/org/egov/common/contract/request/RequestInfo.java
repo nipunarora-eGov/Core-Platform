@@ -33,4 +33,8 @@ public class RequestInfo {
     private PlainAccessRequest plainAccessRequest;
 
     private User userInfo;
+
+    private String requestUri;
+
+    private String contentType;
 }
