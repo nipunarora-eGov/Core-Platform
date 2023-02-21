@@ -63,21 +63,22 @@ public class ServiceDefinitionRowMapper implements ResultSetExtractor<List<Servi
     }
 
     private void addAttributeDefinitions(ResultSet rs, ServiceDefinition serviceDefinition) throws SQLException, DataAccessException {
-        String values = rs.getString("avalues");
-        AuditDetails auditDetails = AuditDetails.builder().createdBy(rs.getString("acreatedby"))
-                .createdTime(rs.getLong("acreatedtime")).lastModifiedBy(rs.getString("alastmodifiedby"))
-                .lastModifiedTime(rs.getLong("alastmodifiedtime")).build();
-        AttributeDefinition attributeDefinition = AttributeDefinition.builder().id(rs.getString("aid"))
-                .referenceId(rs.getString("areferenceid"))
-                .tenantId(rs.getString("atenantid"))
-                .code(rs.getString("acode"))
-                .dataType(AttributeDefinition.DataTypeEnum.fromValue(rs.getString("adatatype")))
+        String values = rs.getString("attribute_definition_values");
+        AuditDetails auditDetails = AuditDetails.builder().createdBy(rs.getString("attribute_definition_createdby"))
+                .createdTime(rs.getLong("attribute_definition_createdtime")).lastModifiedBy(rs.getString("attribute_definition_lastmodifiedby"))
+                .lastModifiedTime(rs.getLong("attribute_definition_lastmodifiedtime")).build();
+        AttributeDefinition attributeDefinition = AttributeDefinition.builder().id(rs.getString("attribute_definition_id"))
+                .referenceId(rs.getString("attribute_definition_referenceid"))
+                .tenantId(rs.getString("attribute_definition_tenantid"))
+                .code(rs.getString("attribute_definition_code"))
+                .dataType(AttributeDefinition.DataTypeEnum.fromValue(rs.getString("attribute_definition_datatype")))
                 .values(StringUtils.isEmpty(values) ? Arrays.asList() : Arrays.asList(values.split(",")))
-                .isActive(rs.getBoolean("aisactive"))
-                .required(rs.getBoolean("arequired"))
-                .regEx(rs.getString("aregex"))
-                .order(rs.getString("aorder"))
-                .additionalDetails((PGobject) rs.getObject("aadditionaldetails"))
+                .isActive(rs.getBoolean("attribute_definition_isactive"))
+                .required(rs.getBoolean("attribute_definition_required"))
+                .regEx(rs.getString("attribute_definition_regex"))
+                .order(rs.getString("attribute_definition_order"))
+                .auditDetails(auditDetails)
+                .additionalDetails((PGobject) rs.getObject("attribute_definition_additionaldetails"))
                 .build();
 
         if (CollectionUtils.isEmpty(serviceDefinition.getAttributes())) {
