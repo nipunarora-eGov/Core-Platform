@@ -104,4 +104,12 @@ public class Configuration {
     //SMSNotification
     @Value("${egov.sms.notification.topic}")
     private String smsNotificationTopic;
+
+    // Pagination
+    @Value("${egov.service.request.default.offset}")
+    private Integer defaultOffset;
+
+    @Value("${egov.service.request.default.limit}")
+    private Integer defaultLimit;
+
 }

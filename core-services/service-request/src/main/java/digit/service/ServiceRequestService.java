@@ -43,9 +43,11 @@ public class ServiceRequestService {
         return serviceDefinition;
     }
 
-    public List<ServiceDefinition> searchServiceDefinition(RequestInfo requestInfo, ServiceDefinitionCriteria criteria){
+    public List<ServiceDefinition> searchServiceDefinition(ServiceDefinitionSearchRequest serviceDefinitionSearchRequest){
 
-        List<ServiceDefinition> listOfServiceDefinitions = serviceRepository.getServiceDefinitions(criteria);
+        ServiceDefinitionCriteria criteria = serviceDefinitionSearchRequest.getServiceDefinitionCriteria();
+
+        List<ServiceDefinition> listOfServiceDefinitions = serviceRepository.getServiceDefinitions(serviceDefinitionSearchRequest);
 
         if(CollectionUtils.isEmpty(listOfServiceDefinitions))
             return new ArrayList<>();

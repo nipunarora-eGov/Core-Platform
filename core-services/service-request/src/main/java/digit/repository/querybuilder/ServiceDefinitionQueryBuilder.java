@@ -1,6 +1,10 @@
 package digit.repository.querybuilder;
 
+import digit.config.Configuration;
+import digit.web.models.Pagination;
 import digit.web.models.ServiceDefinitionCriteria;
+import digit.web.models.ServiceDefinitionSearchRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -10,16 +14,21 @@ import java.util.List;
 @Component
 public class ServiceDefinitionQueryBuilder {
 
+    @Autowired
+    private Configuration config;
+
     private static final String SELECT = " SELECT ";
     private static final String INNER_JOIN = " INNER JOIN ";
     private static final String LEFT_JOIN  =  " LEFT OUTER JOIN ";
     private static final String AND_QUERY = " AND ";
 
-    private static final String IDS_WRAPPER_QUERY = " SELECT uuid FROM ({HELPER_TABLE}) temp ";
+    private static final String IDS_WRAPPER_QUERY = " SELECT id FROM ({HELPER_TABLE}) temp ";
     private final String ORDERBY_CREATEDTIME = " ORDER BY sd.createdtime DESC ";
 
-    public String getServiceDefinitionsIdsQuery(ServiceDefinitionCriteria criteria, List<Object> preparedStmtList) {
-        StringBuilder query = new StringBuilder(SELECT + " DISTINCT(sd.id) ");
+    public String getServiceDefinitionsIdsQuery(ServiceDefinitionSearchRequest serviceDefinitionSearchRequest, List<Object> preparedStmtList) {
+        ServiceDefinitionCriteria criteria = serviceDefinitionSearchRequest.getServiceDefinitionCriteria();
+
+        StringBuilder query = new StringBuilder(SELECT + " DISTINCT(sd.id), sd.createdtime ");
         query.append(" FROM eg_service_definition sd ");
 
         if(!ObjectUtils.isEmpty(criteria.getTenantId())){
@@ -49,7 +58,7 @@ public class ServiceDefinitionQueryBuilder {
         query.append(ORDERBY_CREATEDTIME);
 
         // Pagination to limit results
-        addPagination(query, preparedStmtList, criteria);
+        addPagination(query, preparedStmtList, serviceDefinitionSearchRequest.getPagination());
 
         return IDS_WRAPPER_QUERY.replace("{HELPER_TABLE}", query.toString());
     }
@@ -79,25 +88,31 @@ public class ServiceDefinitionQueryBuilder {
         });
     }
 
-    private void addPagination(StringBuilder query,List<Object> preparedStmtList,ServiceDefinitionCriteria criteria){
-        int limit = config.getDefaultLimit();
-        int offset = config.getDefaultOffset();
+    private void addPagination(StringBuilder query, List<Object> preparedStmtList, Pagination pagination) {
+
+        // Append offset
         query.append(" OFFSET ? ");
+        preparedStmtList.add(ObjectUtils.isEmpty(pagination.getOffset()) ? config.getDefaultOffset() : pagination.getOffset());
+
+        // Append limit
         query.append(" LIMIT ? ");
-
-        if(criteria.getgetLimit()!=null && criteria.getLimit()<=config.getMaxSearchLimit())
-            limit = criteria.getLimit();
-
-        if(criteria.getLimit()!=null && criteria.getLimit()>config.getMaxSearchLimit())
-            limit = config.getMaxSearchLimit();
-
-        if(criteria.getOffset()!=null)
-            offset = criteria.getOffset();
-
-        preparedStmtList.add(offset);
-        preparedStmtList.add(limit);
-
+        preparedStmtList.add(ObjectUtils.isEmpty(pagination.getLimit()) ? config.getDefaultLimit() : pagination.getLimit());
     }
 
 
+    public String getServiceDefinitionSearchQuery(ServiceDefinitionCriteria criteria, List<Object> preparedStmtList) {
+        StringBuilder query = new StringBuilder("SELECT sd.id, sd.tenantid,  sd.code, sd.isactive, sd.createdby, sd.lastmodifiedby, sd.createdtime, sd.lastmodifiedtime, sd.additionaldetails, "
+                + "ad.id as aid, ad.referenceid as areferenceid, ad.tenantid as atenantid, ad.code as acode, ad.datatype as adatatype, ad.values as avalues, ad.isactive as aisactive, ad.required as arequired, ad.regex as aregex, ad.order as aorder, ad.createdby as acreatedby, ad.lastmodifiedby as alastmodifiedby, ad.createdtime as acreatedtime, ad.lastmodifiedtime as alastmodifiedtime, ad.additionaldetails as aadditionaldetails "
+                + "FROM eg_service_definition as sd "
+                + "INNER JOIN eg_service_attribute_definition as ad ON "
+                + "sd.id=ad.referenceid ");
+
+        if(!CollectionUtils.isEmpty(criteria.getIds())){
+            addClauseIfRequired(query, preparedStmtList);
+            query.append(" sd.id IN ( ").append(createQuery(criteria.getIds())).append(" )");
+            addToPreparedStatement(preparedStmtList, criteria.getIds());
+        }
+
+        return query.toString();
+    }
 }
