@@ -107,6 +107,13 @@ public class ServiceDefinitionQueryBuilder {
                 + "INNER JOIN eg_service_attribute_definition as ad ON "
                 + "sd.id=ad.referenceid ");
 
+
+        if(!ObjectUtils.isEmpty(criteria.getTenantId())){
+            addClauseIfRequired(query, preparedStmtList);
+            query.append(" sd.tenantid = ? ");
+            preparedStmtList.add(criteria.getTenantId());
+        }
+
         if(!CollectionUtils.isEmpty(criteria.getIds())){
             addClauseIfRequired(query, preparedStmtList);
             query.append(" sd.id IN ( ").append(createQuery(criteria.getIds())).append(" )");

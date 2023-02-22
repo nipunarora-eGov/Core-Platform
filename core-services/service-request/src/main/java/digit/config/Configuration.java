@@ -101,15 +101,21 @@ public class Configuration {
     private String urlShortnerEndpoint;
 
 
-    //SMSNotification
-    @Value("${egov.sms.notification.topic}")
-    private String smsNotificationTopic;
-
     // Pagination
     @Value("${egov.service.request.default.offset}")
     private Integer defaultOffset;
 
     @Value("${egov.service.request.default.limit}")
     private Integer defaultLimit;
+
+    @Value("${egov.service.request.max.limit}")
+    private Integer maxLimit;
+
+    // Kafka topics
+    @Value("${egov.service.definition.create.topic}")
+    private String serviceDefinitionCreateTopic;
+
+    @Value("${egov.service.create.topic}")
+    private String serviceCreateTopic;
 
 }

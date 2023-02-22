@@ -1,14 +1,13 @@
 package digit.web.controllers;
 
 
-import digit.service.ServiceRequestService;
+import digit.service.ServiceDefinitionRequestService;
 import digit.util.ResponseInfoFactory;
 import digit.web.models.ServiceDefinition;
 import digit.web.models.ServiceDefinitionRequest;
 import digit.web.models.ServiceDefinitionResponse;
 import digit.web.models.ServiceDefinitionSearchRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.egov.common.contract.request.RequestInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.egov.common.contract.response.ResponseInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,11 +31,11 @@ public class ServiceDefinitionController {
     private ResponseInfoFactory responseInfoFactory;
 
     @Autowired
-    private ServiceRequestService serviceRequestService;
+    private ServiceDefinitionRequestService serviceDefinitionRequestService;
 
     @RequestMapping(value="/definition/v1/_create", method = RequestMethod.POST)
     public ResponseEntity<ServiceDefinitionResponse> create(@RequestBody @Valid ServiceDefinitionRequest serviceDefinitionRequest) {
-        ServiceDefinition serviceDefinition = serviceRequestService.createServiceDefinition(serviceDefinitionRequest);
+        ServiceDefinition serviceDefinition = serviceDefinitionRequestService.createServiceDefinition(serviceDefinitionRequest);
         ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(serviceDefinitionRequest.getRequestInfo(), true);
         ServiceDefinitionResponse response = ServiceDefinitionResponse.builder().serviceDefinition(Collections.singletonList(serviceDefinition)).responseInfo(responseInfo).build();
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -45,14 +43,14 @@ public class ServiceDefinitionController {
 
     @RequestMapping(value="/definition/v1/_search", method = RequestMethod.POST)
     public ResponseEntity<ServiceDefinitionResponse> search(@Valid @RequestBody ServiceDefinitionSearchRequest serviceDefinitionSearchRequest) {
-        List<ServiceDefinition> serviceDefinitionList = serviceRequestService.searchServiceDefinition(serviceDefinitionSearchRequest);
+        List<ServiceDefinition> serviceDefinitionList = serviceDefinitionRequestService.searchServiceDefinition(serviceDefinitionSearchRequest);
         ServiceDefinitionResponse response  = ServiceDefinitionResponse.builder().serviceDefinition(serviceDefinitionList).build();
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
     @RequestMapping(value="/definition/v1/_update", method = RequestMethod.POST)
     public ResponseEntity<ServiceDefinitionResponse> update(@RequestBody @Valid ServiceDefinitionRequest serviceDefinitionRequest){
-        ServiceDefinition serviceDefinition = serviceRequestService.updateServiceDefinition(serviceDefinitionRequest);
+        ServiceDefinition serviceDefinition = serviceDefinitionRequestService.updateServiceDefinition(serviceDefinitionRequest);
         ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(serviceDefinitionRequest.getRequestInfo(), true);
         ServiceDefinitionResponse response = ServiceDefinitionResponse.builder().serviceDefinition(Collections.singletonList(serviceDefinition)).responseInfo(responseInfo).build();
         return new ResponseEntity<>(response, HttpStatus.OK);

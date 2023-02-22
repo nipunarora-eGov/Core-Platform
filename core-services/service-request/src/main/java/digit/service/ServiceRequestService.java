@@ -1,10 +1,11 @@
 package digit.service;
 
+import digit.config.Configuration;
 import digit.kafka.Producer;
-import digit.repository.ServiceRepository;
-import digit.validators.Validator;
+import digit.repository.ServiceRequestRepository;
+import digit.validators.ServiceDefinitionRequestValidator;
+import digit.validators.ServiceRequestValidator;
 import digit.web.models.*;
-import org.egov.common.contract.request.RequestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -16,85 +17,39 @@ import java.util.List;
 public class ServiceRequestService {
 
     @Autowired
-    private Validator validator;
+    private ServiceRequestValidator serviceRequestValidator;
 
     @Autowired
     private ServiceRequestEnrichmentService enrichmentService;
 
     @Autowired
-    private ServiceRepository serviceRepository;
+    private ServiceRequestRepository serviceRequestRepository;
 
     @Autowired
     private Producer producer;
 
-    public ServiceDefinition createServiceDefinition(ServiceDefinitionRequest serviceDefinitionRequest) {
-
-        ServiceDefinition serviceDefinition = serviceDefinitionRequest.getServiceDefinition();
-
-        // Validate incoming service definition request
-        validator.validateServiceDefinitionRequest(serviceDefinitionRequest);
-
-        // Enrich incoming service definition request
-        enrichmentService.enrichServiceDefinitionRequest(serviceDefinitionRequest);
-
-        // Producer statement to emit service definition to kafka for persisting
-        producer.push("save-service-definition", serviceDefinitionRequest);
-
-        return serviceDefinition;
-    }
-
-    public List<ServiceDefinition> searchServiceDefinition(ServiceDefinitionSearchRequest serviceDefinitionSearchRequest){
-
-        ServiceDefinitionCriteria criteria = serviceDefinitionSearchRequest.getServiceDefinitionCriteria();
-
-        List<ServiceDefinition> listOfServiceDefinitions = serviceRepository.getServiceDefinitions(serviceDefinitionSearchRequest);
-
-        if(CollectionUtils.isEmpty(listOfServiceDefinitions))
-            return new ArrayList<>();
-
-        return listOfServiceDefinitions;
-    }
-
-    public ServiceDefinition updateServiceDefinition(ServiceDefinitionRequest serviceDefinitionRequest) {
-
-        // Validate update request - validate existence, validate fields being updated
-        validator.validateUpdateRequest(serviceDefinitionRequest);
-
-        /*
-        documentValidator.validateCategoryFromMdms(documentRequest);
-        DocumentEntity existingEntity = documentValidator.validateDocumentExistence(documentRequest.getDocumentEntity());
-        DocumentEntity documentEntity = documentRequest.getDocumentEntity();
-        documentEntity.setAuditDetails(existingEntity.getAuditDetails());
-        documentEntity.getAuditDetails().setLastModifiedBy(documentRequest.getRequestInfo().getUserInfo().getUuid());
-        documentEntity.getAuditDetails().setLastModifiedTime(System.currentTimeMillis());
-        documentEntity.setPostedBy(documentRequest.getRequestInfo().getUserInfo().getName());
-        //log.info(documentEntity.toString());
-
-         */
-        producer.push("update-service-definition", serviceDefinitionRequest);
-
-        return serviceDefinitionRequest.getServiceDefinition();
-    }
+    @Autowired
+    private Configuration config;
 
     public digit.web.models.Service createService(ServiceRequest serviceRequest) {
 
         digit.web.models.Service service = serviceRequest.getService();
 
         // Validate incoming service definition request
-        validator.validateServiceRequest(service);
+        serviceRequestValidator.validateServiceRequest(serviceRequest);
 
         // Enrich incoming service definition request
-        enrichmentService.enrichServiceRequest(service);
+        enrichmentService.enrichServiceRequest(serviceRequest);
 
         // Producer statement to emit service definition to kafka for persisting
-        producer.push("save-service", serviceRequest);
+        producer.push(config.getServiceCreateTopic(), serviceRequest);
 
         return service;
     }
 
-    public List<digit.web.models.Service> searchService(RequestInfo requestInfo, ServiceCriteria criteria){
+    public List<digit.web.models.Service> searchService(ServiceSearchRequest serviceSearchRequest){
 
-        List<digit.web.models.Service> listOfServices = serviceRepository.getService(criteria);
+        List<digit.web.models.Service> listOfServices = serviceRequestRepository.getService(serviceSearchRequest);
 
         if(CollectionUtils.isEmpty(listOfServices))
             return new ArrayList<>();
@@ -104,25 +59,9 @@ public class ServiceRequestService {
 
     public digit.web.models.Service updateService(ServiceRequest serviceRequest) {
 
-        // Validate update request - validate existence, validate fields being updated
-        validator.validateServiceUpdateRequest(serviceRequest);
-
-        /*
-        documentValidator.validateCategoryFromMdms(documentRequest);
-        DocumentEntity existingEntity = documentValidator.validateDocumentExistence(documentRequest.getDocumentEntity());
-        DocumentEntity documentEntity = documentRequest.getDocumentEntity();
-        documentEntity.setAuditDetails(existingEntity.getAuditDetails());
-        documentEntity.getAuditDetails().setLastModifiedBy(documentRequest.getRequestInfo().getUserInfo().getUuid());
-        documentEntity.getAuditDetails().setLastModifiedTime(System.currentTimeMillis());
-        documentEntity.setPostedBy(documentRequest.getRequestInfo().getUserInfo().getName());
-        //log.info(documentEntity.toString());
-
-         */
-
-        producer.push("update-service", serviceRequest);
+        // TO DO
 
         return serviceRequest.getService();
     }
 
 }
-

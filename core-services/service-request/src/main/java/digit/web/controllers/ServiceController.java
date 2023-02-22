@@ -4,7 +4,6 @@ import digit.service.ServiceRequestService;
 import digit.util.ResponseInfoFactory;
 import digit.web.models.*;
 import lombok.extern.slf4j.Slf4j;
-import org.egov.common.contract.request.RequestInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.egov.common.contract.response.ResponseInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,17 +38,17 @@ public class ServiceController {
     }
 
     @RequestMapping(value="/v1/_search", method = RequestMethod.POST)
-    public ResponseEntity<ServiceDefinitionResponse> search(@Valid @RequestBody ServiceDefinitionSearchRequest serviceDefinitionSearchRequest) {
-        List<ServiceDefinition> serviceDefinitionList = serviceRequestService.searchServiceDefinition(serviceDefinitionSearchRequest);
-        ServiceDefinitionResponse response  = ServiceDefinitionResponse.builder().serviceDefinition(serviceDefinitionList).build();
+    public ResponseEntity<ServiceResponse> search(@Valid @RequestBody ServiceSearchRequest serviceSearchRequest) {
+        List<Service> serviceList = serviceRequestService.searchService(serviceSearchRequest);
+        ServiceResponse response  = ServiceResponse.builder().service(serviceList).build();
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
     @RequestMapping(value="/v1/_update", method = RequestMethod.POST)
-    public ResponseEntity<ServiceDefinitionResponse> update(@RequestBody @Valid ServiceDefinitionRequest serviceDefinitionRequest){
-        ServiceDefinition serviceDefinition = serviceRequestService.updateServiceDefinition(serviceDefinitionRequest);
-        ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(serviceDefinitionRequest.getRequestInfo(), true);
-        ServiceDefinitionResponse response = ServiceDefinitionResponse.builder().serviceDefinition(Collections.singletonList(serviceDefinition)).responseInfo(responseInfo).build();
+    public ResponseEntity<ServiceResponse> update(@RequestBody @Valid ServiceRequest serviceRequest){
+        Service service = serviceRequestService.updateService(serviceRequest);
+        ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(serviceRequest.getRequestInfo(), true);
+        ServiceResponse response = ServiceResponse.builder().service(Collections.singletonList(service)).responseInfo(responseInfo).build();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

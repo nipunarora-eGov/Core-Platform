@@ -30,6 +30,10 @@ public class AttributeValue {
     @JsonProperty("id")
     private String id = null;
 
+    @JsonProperty("referenceId")
+    @Size(min = 2, max = 64)
+    private String referenceId = null;
+
     @JsonProperty("attributeCode")
     @NotNull
     private String attributeCode = null;

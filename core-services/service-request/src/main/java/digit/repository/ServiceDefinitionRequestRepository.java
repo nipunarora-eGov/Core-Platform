@@ -16,7 +16,7 @@ import java.util.List;
 
 @Slf4j
 @Repository
-public class ServiceRepository {
+public class ServiceDefinitionRequestRepository {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;

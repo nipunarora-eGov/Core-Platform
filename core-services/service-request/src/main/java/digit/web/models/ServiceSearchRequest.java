@@ -33,10 +33,10 @@ public class ServiceSearchRequest {
     @Valid
     private RequestInfo requestInfo = null;
 
-    @JsonProperty("serviceDefinition")
+    @JsonProperty("serviceCriteria")
     @NotNull
     @Valid
-    private ServiceCriteria serviceDefinition = null;
+    private ServiceCriteria serviceCriteria = null;
 
     @JsonProperty("pagination")
     @Valid

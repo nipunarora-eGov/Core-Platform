@@ -1,45 +1,60 @@
 package digit.repository;
 
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import digit.repository.querybuilder.ServiceDefinitionQueryBuilder;
+import digit.repository.querybuilder.ServiceQueryBuilder;
+import digit.repository.rowmapper.ServiceDefinitionRowMapper;
+import digit.repository.rowmapper.ServiceRowMapper;
+import digit.web.models.*;
 import lombok.extern.slf4j.Slf4j;
-import org.egov.tracer.model.ServiceCallException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
-@Repository
 @Slf4j
+@Repository
 public class ServiceRequestRepository {
 
-    private ObjectMapper mapper;
-
-    private RestTemplate restTemplate;
-
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public ServiceRequestRepository(ObjectMapper mapper, RestTemplate restTemplate) {
-        this.mapper = mapper;
-        this.restTemplate = restTemplate;
-    }
+    private ServiceRowMapper serviceRowMapper;
+
+    @Autowired
+    private ServiceQueryBuilder serviceQueryBuilder;
 
 
-    public Object fetchResult(StringBuilder uri, Object request) {
-        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-        Object response = null;
-        try {
-            response = restTemplate.postForObject(uri.toString(), request, Map.class);
-        }catch(HttpClientErrorException e) {
-            log.error("External Service threw an Exception: ",e);
-            throw new ServiceCallException(e.getResponseBodyAsString());
-        }catch(Exception e) {
-            log.error("Exception while fetching from searcher: ",e);
+    public List<Service> getService(ServiceSearchRequest serviceSearchRequest) {
+        ServiceCriteria criteria = serviceSearchRequest.getServiceCriteria();
+
+        List<Object> preparedStmtList = new ArrayList<>();
+
+        if(CollectionUtils.isEmpty(criteria.getIds()) && ObjectUtils.isEmpty(criteria.getTenantId()) && CollectionUtils.isEmpty(criteria.getServiceDefIds()) && CollectionUtils.isEmpty(criteria.getReferenceIds()))
+            return new ArrayList<>();
+
+        // Fetch ids based on criteria if ids are not present
+        if(CollectionUtils.isEmpty(criteria.getIds())){
+            // Fetch ids according to given criteria
+            String idQuery = serviceQueryBuilder.getServiceIdsQuery(serviceSearchRequest, preparedStmtList);
+            log.info("Service ids query: " + idQuery);
+            log.info("Parameters: " + preparedStmtList.toString());
+            List<String> serviceIds = jdbcTemplate.query(idQuery, preparedStmtList.toArray(), new SingleColumnRowMapper<>(String.class));
+
+            // Set ids in criteria
+            criteria.setIds(serviceIds);
+            preparedStmtList.clear();
         }
 
-        return response;
+
+        // Search based on the ids found out/ ids been explicitly provided in the request.
+        String query = serviceQueryBuilder.getServiceSearchQuery(criteria, preparedStmtList);
+        log.info("query for search: " + query + " params: " + preparedStmtList);
+        return jdbcTemplate.query(query, preparedStmtList.toArray(), serviceRowMapper);
     }
 }
