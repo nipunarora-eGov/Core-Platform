@@ -44,6 +44,9 @@ public class ServiceDefinitionRequestRepository {
             log.info("Parameters: " + preparedStmtList.toString());
             List<String> serviceDefinitionIds = jdbcTemplate.query(idQuery, preparedStmtList.toArray(), new SingleColumnRowMapper<>(String.class));
 
+            if(CollectionUtils.isEmpty(serviceDefinitionIds))
+                return new ArrayList<>();
+
             // Set ids in criteria
             criteria.setIds(serviceDefinitionIds);
             preparedStmtList.clear();

@@ -49,7 +49,7 @@ public class ServiceDefinitionRowMapper implements ResultSetExtractor<List<Servi
                             .code(rs.getString("code"))
                             .isActive(rs.getBoolean("isactive"))
                             .auditDetails(auditDetails)
-                            .additionalDetails((PGobject) rs.getObject("additionaldetails"))
+                            .additionalDetails(getAdditionalDetail((PGobject) rs.getObject("additionaldetails")))
                             .build();
 
                 }
@@ -75,10 +75,10 @@ public class ServiceDefinitionRowMapper implements ResultSetExtractor<List<Servi
                 .values(StringUtils.isEmpty(values) ? Arrays.asList() : Arrays.asList(values.split(",")))
                 .isActive(rs.getBoolean("attribute_definition_isactive"))
                 .required(rs.getBoolean("attribute_definition_required"))
-                .regEx(rs.getString("attribute_definition_regex"))
+                .regex(rs.getString("attribute_definition_regex"))
                 .order(rs.getString("attribute_definition_order"))
                 .auditDetails(auditDetails)
-                .additionalDetails((PGobject) rs.getObject("attribute_definition_additionaldetails"))
+                .additionalDetails(getAdditionalDetail((PGobject) rs.getObject("attribute_definition_additionaldetails")))
                 .build();
 
         if (CollectionUtils.isEmpty(serviceDefinition.getAttributes())) {
@@ -90,6 +90,20 @@ public class ServiceDefinitionRowMapper implements ResultSetExtractor<List<Servi
         }
 
 
+    }
+
+    private JsonNode getAdditionalDetail(PGobject pGobject){
+
+        JsonNode additionalDetail = null;
+        try {
+            if(pGobject != null){
+                additionalDetail = mapper.readTree(pGobject.getValue());
+            }
+        }
+        catch (IOException e){
+            throw new CustomException("PARSING_ERROR","Failed to parse additionalDetail object");
+        }
+        return additionalDetail;
     }
 
     private JsonNode getJsonValue(PGobject pGobject) {

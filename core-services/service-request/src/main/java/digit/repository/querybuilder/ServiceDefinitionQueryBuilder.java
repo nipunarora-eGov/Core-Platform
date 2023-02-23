@@ -58,9 +58,19 @@ public class ServiceDefinitionQueryBuilder {
         query.append(ORDERBY_CREATEDTIME);
 
         // Pagination to limit results
+        if(ObjectUtils.isEmpty(serviceDefinitionSearchRequest.getPagination())){
+            prepareDefaultPaginationObject(serviceDefinitionSearchRequest);
+        }
         addPagination(query, preparedStmtList, serviceDefinitionSearchRequest.getPagination());
 
         return IDS_WRAPPER_QUERY.replace("{HELPER_TABLE}", query.toString());
+    }
+
+    private void prepareDefaultPaginationObject(ServiceDefinitionSearchRequest serviceDefinitionSearchRequest) {
+        Pagination pagination = new Pagination();
+        pagination.setOffset(config.getDefaultOffset());
+        pagination.setLimit(config.getDefaultLimit());
+        serviceDefinitionSearchRequest.setPagination(pagination);
     }
 
     private void addClauseIfRequired(StringBuilder query, List<Object> preparedStmtList){

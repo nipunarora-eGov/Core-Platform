@@ -104,9 +104,9 @@ public class AttributeDefinition {
     @JsonProperty("required")
     private Boolean required = null;
 
-    @JsonProperty("regEx")
+    @JsonProperty("regex")
     @Size(min = 2, max = 64)
-    private String regEx = null;
+    private String regex = null;
 
     @JsonProperty("order")
     private String order = null;

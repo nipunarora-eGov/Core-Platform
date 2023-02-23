@@ -46,6 +46,9 @@ public class ServiceRequestRepository {
             log.info("Parameters: " + preparedStmtList.toString());
             List<String> serviceIds = jdbcTemplate.query(idQuery, preparedStmtList.toArray(), new SingleColumnRowMapper<>(String.class));
 
+            if(CollectionUtils.isEmpty(serviceIds))
+                return new ArrayList<>();
+
             // Set ids in criteria
             criteria.setIds(serviceIds);
             preparedStmtList.clear();

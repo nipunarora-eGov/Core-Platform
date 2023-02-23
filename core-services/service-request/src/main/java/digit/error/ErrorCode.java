@@ -51,4 +51,8 @@ public class ErrorCode {
     public static final String SERVICE_REQUEST_REQUIRED_ATTRIBUTE_NOT_PROVIDED_ERR_CODE = "SERVICE_REQUEST_REQUIRED_ATTRIBUTE_NOT_PROVIDED_ERR_CODE";
 
     public static final String SERVICE_REQUEST_REQUIRED_ATTRIBUTE_NOT_PROVIDED_ERR_MSG = "Mandatory attribute value not provided as part of service request";
+
+    public static final String INVALID_ATTRIBUTE_DEFINITION_ERR_CODE = "INVALID_ATTRIBUTE_DEFINITION_ERR_CODE";
+
+    public static final String INVALID_ATTRIBUTE_DEFINITION_ERR_MSG = "Values are only allowed in case of single value and multi value lists";
 }

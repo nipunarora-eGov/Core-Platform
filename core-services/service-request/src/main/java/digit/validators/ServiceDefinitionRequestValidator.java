@@ -29,6 +29,21 @@ public class ServiceDefinitionRequestValidator {
         // Validate if all attribute definitions provided as part of service definitions have unique code
         validateAttributeDefinitionUniqueness(serviceDefinition);
 
+        // Validate values provided in attribute definitions as per data type
+        validateAttributeValuesAsPerDataType(serviceDefinition);
+
+    }
+
+    private void validateAttributeValuesAsPerDataType(ServiceDefinition serviceDefinition) {
+        // Values should be present only in case of single value and multi value lists
+        serviceDefinition.getAttributes().forEach(attributeDefinition -> {
+            AttributeDefinition.DataTypeEnum dataType = attributeDefinition.getDataType();
+
+            if(!(dataType.equals(AttributeDefinition.DataTypeEnum.SINGLEVALUELIST) || dataType.equals(AttributeDefinition.DataTypeEnum.MULTIVALUELIST))){
+                if(!CollectionUtils.isEmpty(attributeDefinition.getValues()))
+                    throw new CustomException(INVALID_ATTRIBUTE_DEFINITION_ERR_CODE, INVALID_ATTRIBUTE_DEFINITION_ERR_MSG);
+            }
+        });
     }
 
     private void validateAttributeDefinitionUniqueness(ServiceDefinition serviceDefinition) {
@@ -44,7 +59,7 @@ public class ServiceDefinitionRequestValidator {
     }
 
     private void validateServiceDefinitionExistence(ServiceDefinition serviceDefinition) {
-        List<ServiceDefinition> serviceDefinitionList = serviceDefinitionRequestRepository.getServiceDefinitions(ServiceDefinitionSearchRequest.builder().serviceDefinitionCriteria(ServiceDefinitionCriteria.builder().tenantId(serviceDefinition.getTenantId()).code(Collections.singletonList(serviceDefinition.getCode())).build()).pagination(Pagination.builder().offset(0).limit(10).build()).build());
+        List<ServiceDefinition> serviceDefinitionList = serviceDefinitionRequestRepository.getServiceDefinitions(ServiceDefinitionSearchRequest.builder().serviceDefinitionCriteria(ServiceDefinitionCriteria.builder().tenantId(serviceDefinition.getTenantId()).code(Collections.singletonList(serviceDefinition.getCode())).build()).build());
         if(!CollectionUtils.isEmpty(serviceDefinitionList)){
             throw new CustomException(SERVICE_DEFINITION_ALREADY_EXISTS_ERR_CODE, SERVICE_DEFINITION_ALREADY_EXISTS_ERR_MSG);
         }

@@ -51,7 +51,7 @@ public class ServiceRowMapper implements ResultSetExtractor<List<Service>> {
                             .serviceDefId(rs.getString("servicedefid"))
                             .referenceId(rs.getString("referenceid"))
                             .auditDetails(auditDetails)
-                            .additionalDetails((PGobject) rs.getObject("additionaldetails"))
+                            .additionalDetails(getAdditionalDetail((PGobject) rs.getObject("additionaldetails")))
                             .build();
 
                 }
@@ -73,7 +73,7 @@ public class ServiceRowMapper implements ResultSetExtractor<List<Service>> {
                 .attributeCode(rs.getString("attribute_value_attributecode"))
                 .value(rs.getObject("attribute_value_value"))
                 .auditDetails(auditDetails)
-                .additionalDetails((PGobject) rs.getObject("attribute_value_additionaldetails"))
+                .additionalDetails(getAdditionalDetail((PGobject) rs.getObject("attribute_value_additionaldetails")))
                 .build();
 
         if (CollectionUtils.isEmpty(service.getAttributes())) {
@@ -85,6 +85,20 @@ public class ServiceRowMapper implements ResultSetExtractor<List<Service>> {
         }
 
 
+    }
+
+    private JsonNode getAdditionalDetail(PGobject pGobject){
+
+        JsonNode additionalDetail = null;
+        try {
+            if(pGobject != null){
+                additionalDetail = mapper.readTree(pGobject.getValue());
+            }
+        }
+        catch (IOException e){
+            throw new CustomException("PARSING_ERROR","Failed to parse additionalDetail object");
+        }
+        return additionalDetail;
     }
 
     private JsonNode getJsonValue(PGobject pGobject) {

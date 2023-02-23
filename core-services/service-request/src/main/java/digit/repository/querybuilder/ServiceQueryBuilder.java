@@ -56,6 +56,9 @@ public class ServiceQueryBuilder {
         // order services based on their createdtime in latest first manner
         query.append(ORDERBY_CREATEDTIME);
 
+        if(ObjectUtils.isEmpty(serviceSearchRequest.getPagination()))
+            prepareDefaultPaginationObject(serviceSearchRequest);
+
         // Pagination to limit results
         addPagination(query, preparedStmtList, serviceSearchRequest.getPagination());
 
@@ -85,6 +88,13 @@ public class ServiceQueryBuilder {
         ids.forEach(id -> {
             preparedStmtList.add(id);
         });
+    }
+
+    private void prepareDefaultPaginationObject(ServiceSearchRequest serviceSearchRequest) {
+        Pagination pagination = new Pagination();
+        pagination.setOffset(config.getDefaultOffset());
+        pagination.setLimit(config.getDefaultLimit());
+        serviceSearchRequest.setPagination(pagination);
     }
 
     private void addPagination(StringBuilder query, List<Object> preparedStmtList, Pagination pagination) {
