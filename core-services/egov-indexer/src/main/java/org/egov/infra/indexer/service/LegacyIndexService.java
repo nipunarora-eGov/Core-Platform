@@ -123,7 +123,6 @@ public class LegacyIndexService {
         legacyindexRequest.setStartTime(new Date().getTime());
         IndexJobWrapper wrapper = IndexJobWrapper.builder().requestInfo(legacyindexRequest.getRequestInfo()).job(job)
                 .build();
-//		indexerProducer.producer(legacyIndexTopic, legacyindexRequest);
         beginLegacyIndex(legacyindexRequest);
         indexerProducer.producer(persisterCreate, wrapper);
 

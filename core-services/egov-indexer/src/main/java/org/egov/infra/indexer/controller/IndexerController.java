@@ -4,6 +4,7 @@ import javax.validation.Valid;
 
 import org.egov.infra.indexer.producer.IndexerProducer;
 import org.egov.infra.indexer.service.LegacyIndexService;
+import org.egov.infra.indexer.service.LegacyIndexServiceV2;
 import org.egov.infra.indexer.service.ReindexService;
 import org.egov.infra.indexer.validator.Validator;
 import org.egov.infra.indexer.web.contract.LegacyIndexRequest;
@@ -36,6 +37,9 @@ public class IndexerController {
 	
 	@Autowired
 	private LegacyIndexService legacyIndexService;
+
+	@Autowired
+	private LegacyIndexServiceV2 legacyIndexServiceV2;
 
 	
 	@Autowired
@@ -74,4 +78,13 @@ public class IndexerController {
 		return new ResponseEntity<>(response ,HttpStatus.OK);
 
     }
+
+	@PostMapping("/v2/_legacyindex")
+	@ResponseBody
+	public ResponseEntity<?> legacyIndexDataV2(@Valid @RequestBody LegacyIndexRequest legacyIndexRequest){
+		validator.validaterLegacyindexRequest(legacyIndexRequest);
+		LegacyIndexResponse response = legacyIndexServiceV2.createLegacyindexJob(legacyIndexRequest);
+		return new ResponseEntity<>(response ,HttpStatus.OK);
+
+	}
 }
