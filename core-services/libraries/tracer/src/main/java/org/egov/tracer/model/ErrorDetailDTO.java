@@ -1,5 +1,6 @@
 package org.egov.tracer.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 @Setter
@@ -7,10 +8,10 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class ErrorQueueContractDTO extends ErrorQueueContract{
-
+public class ErrorDetailDTO extends ErrorDetail{
+    private String uuid;
+    private AuditDetails auditDetails;
     private Integer retryCount;
-    private ErrorType errorType;
     private Status status;
 
 }

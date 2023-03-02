@@ -24,6 +24,9 @@ public class TracerProperties {
     // Topic to which errors need to be published
     private String errorsTopic;
 
+    // Topic to which error details need to be published
+    private String errorDetailsTopic;
+
     // Exclusion list for tracer filter
     private String filterSkipPattern;
 

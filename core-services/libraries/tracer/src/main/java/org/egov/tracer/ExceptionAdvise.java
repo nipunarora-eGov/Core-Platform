@@ -12,6 +12,7 @@ import org.egov.tracer.kafka.ErrorQueueProducer;
 import org.egov.tracer.model.Error;
 import org.egov.tracer.model.*;
 import org.slf4j.MDC;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -166,6 +167,7 @@ public class ExceptionAdvise {
 
             if (errorRes.getErrors() == null || errorRes.getErrors().size() == 0) {
                 errorRes.setErrors(new ArrayList<>(Collections.singletonList(new Error(exceptionName, "An unhandled exception occurred on the server", exceptionMessage, null))));
+                prepareErrorDetailsAndSend(request, ex);
             } else if (provideExceptionInDetails && errorRes.getErrors() != null && errorRes.getErrors().size() > 0) {
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);
@@ -181,112 +183,19 @@ public class ExceptionAdvise {
     }
 
     public void exceptionHandler(List<ErrorDetail> errorDetails) {
-
+        List<ErrorDetailDTO> errorDetailsForIndexing = new ArrayList<>();
+        // Enrich error uuid and audit details for indexing error details
+        AuditDetails auditDetails = AuditDetails.builder().createdTime(System.currentTimeMillis()).lastModifiedTime(System.currentTimeMillis()).build();
         errorDetails.forEach(errorDetail -> {
-
-            String body = errorDetail.getApiDetails().getRequestBody();
-            String requestURL = errorDetail.getApiDetails().getUrl();
-            String contentType = errorDetail.getApiDetails().getContentType();
-            Boolean isJsonContentType = (contentType != null && contentType.toLowerCase().contains("application/json"));
-
-            ErrorRes errorRes = new ErrorRes();
-            List<Error> errors = new ArrayList<>();
-
-            errorDetail.getErrors().forEach(errorEntity -> {
-                Exception ex = errorEntity.getException();
-                try {
-                    if (ex instanceof HttpMediaTypeNotSupportedException) {
-                        errorRes.setErrors(new ArrayList<>(Collections.singletonList(new Error("UnsupportedMediaType", "An " +
-                                "unsupported media Type was used - " + contentType, null, null))));
-                    } else if (ex instanceof ResourceAccessException) {
-                        Error err = new Error();
-                        err.setCode("ResourceAccessError");
-                        err.setMessage("An error occurred while accessing a underlying resource");
-                        errors.add(err);
-                        errorRes.setErrors(errors);
-                    } else if (ex instanceof HttpMessageNotReadableException) {
-                        Error err = new Error();
-                        String message = ex.getMessage();
-
-                        if (ex.getCause() instanceof JsonMappingException) {
-
-                            Pattern pattern = Pattern.compile("(.+)Can not deserialize instance of ([a-z]+\\.){1,}(?<objecttype>[^ ]+).*\\[\"(?<objectname>[^\"]+)\"\\].*",
-                                    Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-                            Matcher match = pattern.matcher(message);
-                            boolean matched = match.find();
-                            if (matched) {
-                                err.setMessage("Failed to parse field - " + match.group("objectname") + ". Expected type is " + match.group("objecttype"));
-                            } else {
-                                err.setMessage("Failed to deserialize certain JSON fields");
-                            }
-
-                            err.setCode("JsonMappingException");
-
-                        } else if (ex.getCause() instanceof JsonParseException) {
-                            err.setCode("JsonParseException");
-                            message = ex.getCause().getMessage().replaceAll("Source: [^;]+; ", "").replaceAll(" \\(code \\d+\\)", "").replaceAll("\\n", "");
-                            err.setMessage(message);
-                        } else {
-                            try {
-                                err.setMessage("JSON body has errors or is missing");
-                                JsonPath.parse(body).json();
-                            } catch (Exception jsonParseException) {
-                                log.error("Error while parsing JSON", jsonParseException);
-                            }
-                            err.setCode("MissingJsonException");
-                        }
-                        errors.add(err);
-                        errorRes.setErrors(errors);
-                    } else if (ex instanceof MethodArgumentNotValidException) {
-                        MethodArgumentNotValidException argumentNotValidException = (MethodArgumentNotValidException) ex;
-                        errorRes.setErrors(getBindingErrors(argumentNotValidException.getBindingResult(), errors));
-
-                    } else if (ex instanceof CustomBindingResultExceprion) {
-                        CustomBindingResultExceprion customBindingResultExceprion = (CustomBindingResultExceprion) ex;
-                        errorRes.setErrors(getBindingErrors(customBindingResultExceprion.getBindingResult(), errors));
-                    } else if (ex instanceof CustomException) {
-                        CustomException customException = (CustomException) ex;
-                        populateCustomErrors(customException, errors);
-                        errorRes.setErrors(errors);
-                    } else if (ex instanceof ServiceCallException) {
-                        sendErrorMessage(body, ex, requestURL, errorRes, isJsonContentType);
-                    } else if (ex instanceof MissingServletRequestParameterException) {
-                        MissingServletRequestParameterException exception = (MissingServletRequestParameterException) ex;
-                        Error error = new Error();
-                        error.setCode("");
-                        error.setMessage(exception.getMessage());
-                        //error.setDescription(exception.getCause().toString());
-                        List<String> params = new ArrayList<>();
-                        params.add(exception.getParameterName());
-                        error.setParams(params);
-                        errors.add(error);
-                        errorRes.setErrors(errors);
-                    } else if (ex instanceof BindException) {
-                        BindException bindException = (BindException) ex;
-
-                        errorRes.setErrors(getBindingErrors(bindException.getBindingResult(), errors));
-
-                        //errorRes.setErrors(errors);
-                    }
-
-                    String exceptionName = ex.getClass().getSimpleName();
-                    String exceptionMessage = ex.getMessage();
-
-                    if (errorRes.getErrors() == null || errorRes.getErrors().size() == 0) {
-                        errorRes.setErrors(new ArrayList<>(Collections.singletonList(new Error(exceptionName, "An unhandled exception occurred on the server", exceptionMessage, null))));
-                    } else if (provideExceptionInDetails && errorRes.getErrors() != null && errorRes.getErrors().size() > 0) {
-                        StringWriter sw = new StringWriter();
-                        errorRes.getErrors().get(0).setDescription(sw.toString());
-                    }
-
-                    sendErrorMessage(body, ex, requestURL, errorRes, isJsonContentType, errorEntity.getErrorType());
-                } catch (Exception tracerException) {
-                    log.error("Error in tracer", tracerException);
-                    errorRes.setErrors(new ArrayList<>(Collections.singletonList(new Error("TracerException", "An unhandled exception occurred in tracer handler", null, null))));
-                }
-            });
-
+            ErrorDetailDTO errorDetailDTO = new ErrorDetailDTO();
+            BeanUtils.copyProperties(errorDetail, errorDetailDTO);
+            errorDetailDTO.setUuid(UUID.randomUUID().toString());
+            errorDetailDTO.setAuditDetails(auditDetails);
+            errorDetailDTO.setStatus(Status.UNSUCCESSFUL);
+            errorDetailDTO.setRetryCount(0);
+            errorDetailsForIndexing.add(errorDetailDTO);
         });
+        errorQueueProducer.sendErrorDetails(errorDetailsForIndexing);
 
     }
 
@@ -324,6 +233,43 @@ public class ExceptionAdvise {
 
     }
 
+    private void prepareErrorDetailsAndSend(HttpServletRequest request, Exception ex) {
+        String contentType = request.getContentType();
+        String body = "";
+
+        try {
+            if (request instanceof MultiReadRequestWrapper) {
+                ServletInputStream stream = request.getInputStream();
+                body = IOUtils.toString(stream, "UTF-8");
+            } else
+                body = "Unable to retrieve request body";
+
+        } catch (IOException ignored) {
+            body = "Unable to retrieve request body";
+        }
+
+        // Prepare API Details
+        ApiDetails apiDetails = new ApiDetails();
+        apiDetails.setRequestBody(body);
+        apiDetails.setContentType(contentType);
+        apiDetails.setUrl(request.getRequestURL().toString());
+
+        // Prepare error entity
+        ErrorEntity errorEntity = new ErrorEntity();
+        errorEntity.setErrorType(ErrorType.RECOVERABLE);
+        errorEntity.setErrorMessage(ex.getMessage());
+        errorEntity.setErrorCode("An unhandled exception occurred on the server");
+        errorEntity.setException(ex);
+
+        // Prepare error detail
+        ErrorDetail errorDetail = new ErrorDetail();
+        errorDetail.setApiDetails(apiDetails);
+        errorDetail.setErrors(Collections.singletonList(errorEntity));
+
+        // Call exceptionHandler method to persist unhandled errors
+        exceptionHandler(Collections.singletonList(errorDetail));
+    }
+
     void sendErrorMessage(String body, Exception ex, String source, ErrorRes errorRes, boolean isJsonContentType) {
         DocumentContext documentContext;
 
@@ -354,37 +300,6 @@ public class ExceptionAdvise {
             errorQueueProducer.sendMessage(errorQueueContract);
         }
 
-    }
-
-    void sendErrorMessage(String body, Exception ex, String source, ErrorRes errorRes, boolean isJsonContentType, ErrorType errorType) {
-        DocumentContext documentContext;
-
-        Object requestBody = body;
-        if (isJsonContentType) {
-            try {
-                documentContext = JsonPath.parse(body);
-                requestBody = documentContext.json();
-            } catch (Exception exception) {
-                requestBody = body;
-            }
-        }
-
-        StackTraceElement elements[] = ex.getStackTrace();
-
-        ErrorQueueContractDTO errorQueueContractDTO = new ErrorQueueContractDTO();
-        errorQueueContractDTO.setId(UUID.randomUUID().toString());
-        errorQueueContractDTO.setCorrelationId(MDC.get(CORRELATION_ID_MDC));
-        errorQueueContractDTO.setBody(requestBody);
-        errorQueueContractDTO.setSource(source);
-        errorQueueContractDTO.setTs(new Date().getTime());
-        errorQueueContractDTO.setErrorRes(errorRes);
-        errorQueueContractDTO.setException(Arrays.asList(elements));
-        errorQueueContractDTO.setMessage(ex.getMessage());
-        errorQueueContractDTO.setRetryCount(0);
-        errorQueueContractDTO.setErrorType(errorType);
-        errorQueueContractDTO.setStatus(Status.UNSUCCESSFUL);
-
-        errorQueueProducer.sendMessage(errorQueueContractDTO);
     }
 
 }
