@@ -36,4 +36,10 @@ public class ErrorRetryPipelineConfiguration {
         converter.setObjectMapper(objectMapper);
         return converter;
     }
+
+    @Value("${error.detail.search.default.offset}")
+    private Integer defaultOffset;
+
+    @Value("${error.detail.search.default.limit}")
+    private Integer defaultLimit;
 }
