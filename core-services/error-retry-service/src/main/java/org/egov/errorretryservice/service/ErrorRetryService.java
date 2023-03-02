@@ -78,7 +78,7 @@ public class ErrorRetryService {
             return new ResponseEntity(responseMap, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        responseMap.put("EG_RETRY_ATTEMPT_SUCCESSFUL", "Error retry attempted successfully.");
+        responseMap.put(ERROR_RETRY_ATTEMPT_SUCCESSFUL_CODE, ERROR_RETRY_ATTEMPT_SUCCESSFUL_MSG);
         return new ResponseEntity(responseMap, HttpStatus.ACCEPTED);
     }
 
@@ -88,7 +88,7 @@ public class ErrorRetryService {
             return new ArrayList<>();
 
         Object request = queryBuilder.prepareRequestForErrorDetailsSearch(errorDetailSearchRequest);
-        log.info(request.toString());
+
         Object response = serviceRequestRepository.fetchResult(queryBuilder.getErrorIndexEsUri(), request);
 
         List<ErrorDetailDTO> listOfErrorObjects = objectMapper.convertValue(JsonPath.read(response, DATA_JSONPATH), List.class);

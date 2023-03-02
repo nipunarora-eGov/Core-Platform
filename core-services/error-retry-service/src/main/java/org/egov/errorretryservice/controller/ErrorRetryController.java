@@ -36,14 +36,12 @@ public class ErrorRetryController {
 
     @RequestMapping(value="/_attempt", method = RequestMethod.POST)
     public ResponseEntity<?> create(@RequestBody @Valid ErrorRetryRequest errorRetryRequest) {
-        //log.info(errorRetryRequest.getId());
         ResponseEntity responseEntity = errorRetryService.attemptErrorRetry(errorRetryRequest);
         return responseEntity;
     }
 
     @RequestMapping(value="/_search", method = RequestMethod.POST)
     public ResponseEntity<?> create(@RequestBody @Valid ErrorDetailSearchRequest errorDetailSearchRequest) {
-        //log.info(errorRetryRequest.getId());
         List<ErrorDetailDTO> errorDetailsList = errorRetryService.search(errorDetailSearchRequest);
         ErrorDetailSearchResponse errorDetailSearchResponse = ErrorDetailSearchResponse.builder().errorDetailList(errorDetailsList).build();
         return new ResponseEntity(errorDetailSearchResponse, HttpStatus.ACCEPTED);

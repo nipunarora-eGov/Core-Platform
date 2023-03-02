@@ -12,8 +12,6 @@ public class ERConstants {
 
     public static final String VALUES = "values";
 
-    public static final String QUERY_KEY = "query";
-
     public static final String BOOL_KEY = "bool";
 
     public static final String MUST_KEY = "must";
@@ -22,13 +20,17 @@ public class ERConstants {
 
     public static final String SIZE_KEY = "size";
 
-    public static final String ORDER_KEY = "order";
-
-    public static final String SORT_KEY = "sort";
-
     public static final String TERMS_KEY = "terms";
 
     public static final String TERM_KEY = "term";
+
+    public static final String ERROR_RETRY_ATTEMPT_SUCCESSFUL_CODE = "EG_RETRY_ATTEMPT_SUCCESSFUL";
+
+    public static final String ERROR_RETRY_ATTEMPT_SUCCESSFUL_MSG = "Error retry attempted successfully.";
+
+    public static final String ERROR_RETRY_ATTEMPT_FAILURE_CODE = "EG_RETRY_ATTEMPT_FAILURE";
+
+    public static final String ERROR_RETRY_ATTEMPT_FAILURE_MSG = "Cannot attempt to retry successful error entry.";
 
 
 }

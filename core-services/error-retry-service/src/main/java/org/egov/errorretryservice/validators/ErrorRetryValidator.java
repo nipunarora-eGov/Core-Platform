@@ -10,6 +10,9 @@ import org.springframework.util.ObjectUtils;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.egov.errorretryservice.constants.ERConstants.ERROR_RETRY_ATTEMPT_FAILURE_CODE;
+import static org.egov.errorretryservice.constants.ERConstants.ERROR_RETRY_ATTEMPT_FAILURE_MSG;
+
 @Component
 public class ErrorRetryValidator {
 
@@ -20,7 +23,7 @@ public class ErrorRetryValidator {
         Map<String, Object> responseMap = new HashMap<>();
 
         if(!ObjectUtils.isEmpty(errorObject.getStatus()) && errorObject.getStatus().equals(Status.SUCCESSFUL)){
-            responseMap.put("EG_RETRY_ATTEMPT_FAILURE", "Cannot attempt to retry successful error entry.");
+            responseMap.put(ERROR_RETRY_ATTEMPT_FAILURE_CODE, ERROR_RETRY_ATTEMPT_FAILURE_MSG);
         }
 
         /* WHAT SHOULD I CONSIDER IN CASE OF ERROR OBJECT WITH MULTIPLE STATUSES
@@ -31,7 +34,7 @@ public class ErrorRetryValidator {
          */
 
         if(errorObject.getRetryCount() > maxRetries){
-            responseMap.put("EG_RETRY_ATTEMPT_FAILURE", "Cannot attempt to retry error beyond - " + maxRetries + " times.");
+            responseMap.put(ERROR_RETRY_ATTEMPT_FAILURE_CODE, "Cannot attempt to retry error beyond - " + maxRetries + " times.");
         }
 
         return responseMap;
