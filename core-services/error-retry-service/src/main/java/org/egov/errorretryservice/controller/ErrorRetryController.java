@@ -41,7 +41,7 @@ public class ErrorRetryController {
     }
 
     @RequestMapping(value="/_search", method = RequestMethod.POST)
-    public ResponseEntity<?> create(@RequestBody @Valid ErrorDetailSearchRequest errorDetailSearchRequest) {
+    public ResponseEntity<?> search(@RequestBody @Valid ErrorDetailSearchRequest errorDetailSearchRequest) {
         List<ErrorDetailDTO> errorDetailsList = errorRetryService.search(errorDetailSearchRequest);
         ErrorDetailSearchResponse errorDetailSearchResponse = ErrorDetailSearchResponse.builder().errorDetailList(errorDetailsList).build();
         return new ResponseEntity(errorDetailSearchResponse, HttpStatus.ACCEPTED);
