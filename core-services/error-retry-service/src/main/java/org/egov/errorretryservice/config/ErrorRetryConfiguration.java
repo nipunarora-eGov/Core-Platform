@@ -20,7 +20,7 @@ import java.util.TimeZone;
 @Import({TracerConfiguration.class})
 @NoArgsConstructor
 @AllArgsConstructor
-public class ErrorRetryPipelineConfiguration {
+public class ErrorRetryConfiguration {
     @Value("${app.timezone}")
     private String timeZone;
 

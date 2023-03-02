@@ -1,7 +1,7 @@
 package org.egov.errorretryservice.repository.querybuilder;
 
 import lombok.extern.slf4j.Slf4j;
-import org.egov.errorretryservice.config.ErrorRetryPipelineConfiguration;
+import org.egov.errorretryservice.config.ErrorRetryConfiguration;
 import org.egov.errorretryservice.models.ErrorDetailSearchCriteria;
 import org.egov.errorretryservice.models.ErrorDetailSearchRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ public class QueryBuilder {
     private String errorIndex;
 
     @Autowired
-    private ErrorRetryPipelineConfiguration configuration;
+    private ErrorRetryConfiguration configuration;
 
     public Object prepareRequestBodyForESSearch(String id) {
         Map<String, Object> request = new HashMap<>();
