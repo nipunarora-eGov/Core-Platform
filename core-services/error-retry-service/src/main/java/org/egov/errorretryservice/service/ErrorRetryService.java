@@ -3,11 +3,14 @@ package org.egov.errorretryservice.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
+import org.egov.common.contract.request.RequestInfo;
 import org.egov.errorretryservice.models.ErrorDetailSearchRequest;
 import org.egov.errorretryservice.models.ErrorRetryRequest;
+import org.egov.errorretryservice.models.ErrorRetryResponse;
 import org.egov.errorretryservice.producer.Producer;
 import org.egov.errorretryservice.repository.ServiceRequestRepository;
 import org.egov.errorretryservice.repository.querybuilder.QueryBuilder;
+import org.egov.errorretryservice.utils.ResponseInfoFactory;
 import org.egov.errorretryservice.validators.ErrorRetryValidator;
 import org.egov.tracer.model.ErrorDetailDTO;
 import org.egov.tracer.model.Status;
@@ -45,6 +48,9 @@ public class ErrorRetryService {
     @Autowired
     private QueryBuilder queryBuilder;
 
+    @Autowired
+    private ResponseInfoFactory responseInfoFactory;
+
     @Value("${error.queue.kafka.topic}")
     private String errorTopic;
 
@@ -55,15 +61,17 @@ public class ErrorRetryService {
      * @param errorRetryRequest
      * @return
      */
-    public ResponseEntity attemptErrorRetry(ErrorRetryRequest errorRetryRequest){
+    public ResponseEntity<ErrorRetryResponse> attemptErrorRetry(ErrorRetryRequest errorRetryRequest){
 
         // Route request to ES to search for the error entry
         Object request = queryBuilder.prepareRequestBodyForESSearch(errorRetryRequest.getId());
         Object response = serviceRequestRepository.fetchResult(queryBuilder.getErrorIndexEsUri(), request);
-        
+
+        // Parse ES response to get error detail object.
         List<ErrorDetailDTO> listOfErrorObjects = objectMapper.convertValue(JsonPath.read(response, DATA_JSONPATH), List.class);
         ErrorDetailDTO errorObject = objectMapper.convertValue(listOfErrorObjects.get(0), ErrorDetailDTO.class);
 
+        // Validate retry attempt.
         Map<String, Object> responseMap = validator.validateRetryAttempt(errorObject);
 
         if(CollectionUtils.isEmpty(responseMap)){
@@ -82,11 +90,14 @@ public class ErrorRetryService {
                 producer.push(errorTopic, Collections.singletonList(errorObject));
             }
         } else{
-            return new ResponseEntity(responseMap, HttpStatus.INTERNAL_SERVER_ERROR);
+            ErrorRetryResponse errorRetryResponse = prepareErrorRetryResponse(errorRetryRequest.getRequestInfo(), errorRetryRequest.getId(), ERROR_RETRY_ATTEMPT_FAILURE_MSG, responseMap);
+            return new ResponseEntity<>(errorRetryResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         responseMap.put(ERROR_RETRY_ATTEMPT_SUCCESSFUL_CODE, ERROR_RETRY_ATTEMPT_SUCCESSFUL_MSG);
-        return new ResponseEntity(responseMap, HttpStatus.ACCEPTED);
+        ErrorRetryResponse errorRetryResponse = prepareErrorRetryResponse(errorRetryRequest.getRequestInfo(), errorRetryRequest.getId(), ERROR_RETRY_ATTEMPT_SUCCESSFUL_MSG, responseMap);
+
+        return new ResponseEntity<>(errorRetryResponse, HttpStatus.ACCEPTED);
     }
 
     /**
@@ -123,5 +134,14 @@ public class ErrorRetryService {
         Integer retryCount = errorObject.getRetryCount();
         retryCount = retryCount + 1;
         errorObject.setRetryCount(retryCount);
+    }
+
+    private ErrorRetryResponse prepareErrorRetryResponse(RequestInfo requestInfo, String id, String message, Map<String, Object> responseMap) {
+        return ErrorRetryResponse.builder()
+                .responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(requestInfo))
+                .id(id)
+                .message(message)
+                .responseMap(responseMap)
+                .build();
     }
 }

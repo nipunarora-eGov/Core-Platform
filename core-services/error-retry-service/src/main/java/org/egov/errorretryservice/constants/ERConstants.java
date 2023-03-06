@@ -30,7 +30,9 @@ public class ERConstants {
 
     public static final String ERROR_RETRY_ATTEMPT_FAILURE_CODE = "EG_RETRY_ATTEMPT_FAILURE";
 
-    public static final String ERROR_RETRY_ATTEMPT_FAILURE_MSG = "Cannot attempt to retry successful error entry.";
+    public static final String ERROR_RETRY_ATTEMPT_FAILURE_MSG = "Error retry attempt failed.";
+
+    public static final String ERROR_RETRY_ATTEMPT_STATUS_VALIDATION_FAILURE_MSG = "Cannot attempt to retry error detail which is in successful status.";
 
 
 }

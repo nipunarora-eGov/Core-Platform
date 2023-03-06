@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.egov.errorretryservice.models.ErrorDetailSearchRequest;
 import org.egov.errorretryservice.models.ErrorDetailSearchResponse;
 import org.egov.errorretryservice.models.ErrorRetryRequest;
+import org.egov.errorretryservice.models.ErrorRetryResponse;
 import org.egov.errorretryservice.service.ErrorRetryService;
 import org.egov.errorretryservice.utils.ResponseInfoFactory;
 import org.egov.tracer.model.ErrorDetailDTO;
@@ -35,8 +36,8 @@ public class ErrorRetryController {
 
 
     @RequestMapping(value="/_attempt", method = RequestMethod.POST)
-    public ResponseEntity<?> create(@RequestBody @Valid ErrorRetryRequest errorRetryRequest) {
-        ResponseEntity responseEntity = errorRetryService.attemptErrorRetry(errorRetryRequest);
+    public ResponseEntity<ErrorRetryResponse> create(@RequestBody @Valid ErrorRetryRequest errorRetryRequest) {
+        ResponseEntity<ErrorRetryResponse> responseEntity = errorRetryService.attemptErrorRetry(errorRetryRequest);
         return responseEntity;
     }
 

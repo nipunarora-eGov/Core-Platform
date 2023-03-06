@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ResponseInfoFactory {
 
-    public static ResponseInfo createResponseInfoFromRequestInfo(final RequestInfo requestInfo, final Boolean success) {
+    public ResponseInfo createResponseInfoFromRequestInfo(final RequestInfo requestInfo) {
 
         final String apiId = requestInfo != null ? requestInfo.getApiId() : "";
         final String ver = requestInfo != null ? requestInfo.getVer() : "";
