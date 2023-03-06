@@ -41,7 +41,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.egov.tracer.constants.TracerConstants.CORRELATION_ID_MDC;
+import static org.egov.tracer.constants.TracerConstants.*;
 
 
 @ControllerAdvice
@@ -167,7 +167,7 @@ public class ExceptionAdvise {
 
             if (errorRes.getErrors() == null || errorRes.getErrors().size() == 0) {
                 errorRes.setErrors(new ArrayList<>(Collections.singletonList(new Error(exceptionName, "An unhandled exception occurred on the server", exceptionMessage, null))));
-                prepareErrorDetailsAndSend(request, ex);
+                prepareErrorDetailsAndInvokeExceptionHandler(request, ex);
             } else if (provideExceptionInDetails && errorRes.getErrors() != null && errorRes.getErrors().size() > 0) {
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);
@@ -184,17 +184,24 @@ public class ExceptionAdvise {
 
     public void exceptionHandler(List<ErrorDetail> errorDetails) {
         List<ErrorDetailDTO> errorDetailsForIndexing = new ArrayList<>();
-        // Enrich error uuid and audit details for indexing error details
+
+        // Prepare audit details
         AuditDetails auditDetails = AuditDetails.builder().createdTime(System.currentTimeMillis()).lastModifiedTime(System.currentTimeMillis()).build();
+
+        // Enrich error uuid and audit details for indexing error details
         errorDetails.forEach(errorDetail -> {
             ErrorDetailDTO errorDetailDTO = new ErrorDetailDTO();
             BeanUtils.copyProperties(errorDetail, errorDetailDTO);
+
+            // Initialize error details
             errorDetailDTO.setUuid(UUID.randomUUID().toString());
             errorDetailDTO.setAuditDetails(auditDetails);
             errorDetailDTO.setStatus(Status.UNSUCCESSFUL);
             errorDetailDTO.setRetryCount(0);
             errorDetailsForIndexing.add(errorDetailDTO);
         });
+
+        // Send error details for indexing
         errorQueueProducer.sendErrorDetails(errorDetailsForIndexing);
 
     }
@@ -233,7 +240,7 @@ public class ExceptionAdvise {
 
     }
 
-    private void prepareErrorDetailsAndSend(HttpServletRequest request, Exception ex) {
+    private void prepareErrorDetailsAndInvokeExceptionHandler(HttpServletRequest request, Exception ex) {
         String contentType = request.getContentType();
         String body = "";
 
@@ -242,10 +249,10 @@ public class ExceptionAdvise {
                 ServletInputStream stream = request.getInputStream();
                 body = IOUtils.toString(stream, "UTF-8");
             } else
-                body = "Unable to retrieve request body";
+                body = UNABLE_TO_RETRIEVE_REQUEST_BODY_MSG;
 
         } catch (IOException ignored) {
-            body = "Unable to retrieve request body";
+            body = UNABLE_TO_RETRIEVE_REQUEST_BODY_MSG;
         }
 
         // Prepare API Details
@@ -258,7 +265,7 @@ public class ExceptionAdvise {
         ErrorEntity errorEntity = new ErrorEntity();
         errorEntity.setErrorType(ErrorType.RECOVERABLE);
         errorEntity.setErrorMessage(ex.getMessage());
-        errorEntity.setErrorCode("An unhandled exception occurred on the server");
+        errorEntity.setErrorCode(UNHANDLED_EXCEPTION_ERROR_CODE);
         errorEntity.setException(ex);
 
         // Prepare error detail
