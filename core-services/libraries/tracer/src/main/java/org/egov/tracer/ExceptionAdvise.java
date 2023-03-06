@@ -21,6 +21,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -190,11 +191,15 @@ public class ExceptionAdvise {
 
         // Enrich error uuid and audit details for indexing error details
         errorDetails.forEach(errorDetail -> {
+            // Initialize error details
             ErrorDetailDTO errorDetailDTO = new ErrorDetailDTO();
             BeanUtils.copyProperties(errorDetail, errorDetailDTO);
 
-            // Initialize error details
-            errorDetailDTO.setUuid(UUID.randomUUID().toString());
+            // Set uuid only if it is not empty
+            if(ObjectUtils.isEmpty(errorDetailDTO.getUuid()))
+                errorDetailDTO.setUuid(UUID.randomUUID().toString());
+
+            // Initialize values for error detail
             errorDetailDTO.setAuditDetails(auditDetails);
             errorDetailDTO.setStatus(Status.UNSUCCESSFUL);
             errorDetailDTO.setRetryCount(0);
