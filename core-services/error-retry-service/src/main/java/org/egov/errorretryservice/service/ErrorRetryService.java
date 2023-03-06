@@ -136,6 +136,15 @@ public class ErrorRetryService {
         errorObject.setRetryCount(retryCount);
     }
 
+    /**
+     * This method prepares error retry response object to be sent back to the client.
+     *
+     * @param requestInfo
+     * @param id
+     * @param message
+     * @param responseMap
+     * @return
+     */
     private ErrorRetryResponse prepareErrorRetryResponse(RequestInfo requestInfo, String id, String message, Map<String, Object> responseMap) {
         return ErrorRetryResponse.builder()
                 .responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(requestInfo))
