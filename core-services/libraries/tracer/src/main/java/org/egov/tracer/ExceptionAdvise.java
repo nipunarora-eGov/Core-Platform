@@ -249,10 +249,11 @@ public class ExceptionAdvise {
         String contentType = request.getContentType();
         String body = "";
 
+        // Block to parse incoming request for which exception was thrown
         try {
             if (request instanceof MultiReadRequestWrapper) {
                 ServletInputStream stream = request.getInputStream();
-                body = IOUtils.toString(stream, "UTF-8");
+                body = IOUtils.toString(stream, UTF_8_CODE);
             } else
                 body = UNABLE_TO_RETRIEVE_REQUEST_BODY_MSG;
 
