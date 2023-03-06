@@ -48,6 +48,13 @@ public class ErrorRetryService {
     @Value("${error.queue.kafka.topic}")
     private String errorTopic;
 
+    /**
+     * This method fetches error detail stored in database, validates retry attempt and
+     * tries to re-consume the API resource corresponding to the error request.
+     *
+     * @param errorRetryRequest
+     * @return
+     */
     public ResponseEntity attemptErrorRetry(ErrorRetryRequest errorRetryRequest){
 
         // Route request to ES to search for the error entry
@@ -82,20 +89,36 @@ public class ErrorRetryService {
         return new ResponseEntity(responseMap, HttpStatus.ACCEPTED);
     }
 
+    /**
+     * This method prepares request body for searching error details based on the provided
+     * search criteria and returns them.
+     *
+     * @param errorDetailSearchRequest
+     * @return
+     */
     public List<ErrorDetailDTO> search(ErrorDetailSearchRequest errorDetailSearchRequest){
 
+        // If search criteria is empty, return empty list.
         if(ObjectUtils.isEmpty(errorDetailSearchRequest.getErrorDetailSearchCriteria().getId()) && ObjectUtils.isEmpty(errorDetailSearchRequest.getErrorDetailSearchCriteria().getErrorDetailUuid()))
             return new ArrayList<>();
 
+        // If search criteria is not empty, prepare request body with required filters to fetch error details from ES.
         Object request = queryBuilder.prepareRequestForErrorDetailsSearch(errorDetailSearchRequest);
 
+        // REST call to ES database.
         Object response = serviceRequestRepository.fetchResult(queryBuilder.getErrorIndexEsUri(), request);
 
+        // Convert search response to list of error details to be returned.
         List<ErrorDetailDTO> listOfErrorObjects = objectMapper.convertValue(JsonPath.read(response, DATA_JSONPATH), List.class);
 
         return listOfErrorObjects;
     }
 
+    /**
+     * This method increments retry count for incoming error object.
+     *
+     * @param errorObject
+     */
     private void incrementRetryCount(ErrorDetailDTO errorObject) {
         Integer retryCount = errorObject.getRetryCount();
         retryCount = retryCount + 1;
