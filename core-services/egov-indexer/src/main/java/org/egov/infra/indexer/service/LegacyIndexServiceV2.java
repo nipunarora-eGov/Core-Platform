@@ -102,7 +102,7 @@ public class LegacyIndexServiceV2 {
     private IndexerService indexerService;
 
     /**
-     * Creates a legacy index job by making an entry into the eg_indexer_job and returns response with job identifiers.
+     * Creates a legacy index job and invokes creation of chunk jobs.
      *
      * @param legacyIndexRequest
      * @return
@@ -147,13 +147,8 @@ public class LegacyIndexServiceV2 {
     }
 
     /**
-     * Index thread which performs the indexing job. It operates as follows: 1.
-     * Based on the Request, it makes API calls in batches to the external service
-     * 2. With every batch fetched, data is sent to child threads for processing 3.
-     * Child threads perform primary data transformation if required and then hand
-     * it over to another esIndexer method 4. The esIndexer method performs checks
-     * and transformations pas per the config and then posts the data to es in bulk
-     * 5. The process repeats until all the records are indexed.
+     * This methods creates legacy index chunk jobs to be emitted on kafka. Kafka distributes
+     * these chunk jobs across indexer pods for them to process them.
      *
      * @param legacyIndexRequest
      */
@@ -188,6 +183,13 @@ public class LegacyIndexServiceV2 {
 
     }
 
+    /**
+     * This method is invoked by chunk job listener and it fetches legacy data based
+     * on the APIDetails provided and invokes emitting the data on kafka from where
+     * a configured kafka connector can index it onto ES.
+     *
+     * @param legacyIndexRequest
+     */
     public void processChunkJob(LegacyIndexRequest legacyIndexRequest) {
         Integer offset = legacyIndexRequest.getApiDetails().getPaginationDetails().getStartingOffset();
         Integer size = legacyIndexRequest.getApiDetails().getPaginationDetails().getMaxPageSize();
@@ -236,7 +238,10 @@ public class LegacyIndexServiceV2 {
 
     }
 
-    // Emit legacy data to kafka from where the configured kafka connector will pick up and index it
+    /**
+     *  Emit legacy data to kafka from where the configured kafka connector will pick up and index it
+     *
+     */
     public void prepareAndEmitLegacyDataToKafka(LegacyIndexRequest legacyIndexRequest, ObjectMapper mapper, Object response) {
         try {
             if (legacyIndexRequest.getLegacyIndexTopic().equals(pgrLegacyTopic)) {
@@ -259,6 +264,12 @@ public class LegacyIndexServiceV2 {
         }
     }
 
+    /**
+     * Method to prepare request for external URI call.
+     *
+     * @param legacyIndexRequest
+     * @return
+     */
     private Object prepareRequestForExternalUriCall(LegacyIndexRequest legacyIndexRequest) {
         Object request = legacyIndexRequest.getApiDetails().getRequest();
 
@@ -272,7 +283,13 @@ public class LegacyIndexServiceV2 {
         return request;
     }
 
-    // Prepares index job event in accordance with the request and incoming status
+    /**
+     * Prepares index job event in accordance with the request and incoming status.
+     *
+     * @param legacyIndexRequest
+     * @param status
+     * @return
+     */
     private IndexJob prepareIndexJobEventForUpdatingStatus(LegacyIndexRequest legacyIndexRequest, StatusEnum status) {
         return IndexJob.builder().jobId(legacyIndexRequest.getJobId())
                 .totalTimeTakenInMS(new Date().getTime() - legacyIndexRequest.getStartTime())
