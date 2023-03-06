@@ -6,13 +6,13 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.IndexerApplicationRunnerImpl;
 import org.egov.infra.indexer.custom.pgr.PGRCustomDecorator;
-import org.egov.infra.indexer.custom.pgr.PGRIndexObject;
 import org.egov.infra.indexer.custom.pgr.ServiceResponse;
 import org.egov.infra.indexer.custom.pt.PTCustomDecorator;
 import org.egov.infra.indexer.custom.pt.PropertyResponse;
 import org.egov.infra.indexer.models.IndexJob;
 import org.egov.infra.indexer.models.IndexJob.StatusEnum;
 import org.egov.infra.indexer.models.IndexJobWrapper;
+import org.egov.infra.indexer.models.LegacyIndexJob;
 import org.egov.infra.indexer.producer.IndexerProducer;
 import org.egov.infra.indexer.util.IndexerUtils;
 import org.egov.infra.indexer.util.ResponseInfoFactory;
@@ -25,12 +25,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+
+import static org.egov.infra.indexer.util.IndexerConstants.*;
 
 @Service
 @Slf4j
@@ -102,49 +104,46 @@ public class LegacyIndexServiceV2 {
     /**
      * Creates a legacy index job by making an entry into the eg_indexer_job and returns response with job identifiers.
      *
-     * @param legacyindexRequest
+     * @param legacyIndexRequest
      * @return
      */
-    public LegacyIndexResponse createLegacyindexJob(LegacyIndexRequest legacyindexRequest) {
+    public LegacyIndexResponse createLegacyIndexJob(LegacyIndexRequest legacyIndexRequest) {
         Map<String, Mapping> mappingsMap = runner.getMappingMaps();
-        LegacyIndexResponse legacyindexResponse = null;
         StringBuilder url = new StringBuilder();
-        Index index = mappingsMap.get(legacyindexRequest.getLegacyIndexTopic()).getIndexes().get(0);
+        Index index = mappingsMap.get(legacyIndexRequest.getLegacyIndexTopic()).getIndexes().get(0);
         url.append(esHostUrl).append(index.getName()).append("/").append(index.getType()).append("/_search");
-        legacyindexResponse = LegacyIndexResponse.builder()
-                .message("Please hit the 'url' after the legacy index job is complete.").url(url.toString())
-                .responseInfo(factory.createResponseInfoFromRequestInfo(legacyindexRequest.getRequestInfo(), true))
-                .build();
-        IndexJob job = IndexJob.builder().jobId(UUID.randomUUID().toString()).jobStatus(StatusEnum.INPROGRESS)
-                .typeOfJob(ConfigKeyEnum.LEGACYINDEX)
-                .requesterId(legacyindexRequest.getRequestInfo().getUserInfo().getUuid())
-                .newIndex(index.getName() + "/" + index.getType()).tenantId(legacyindexRequest.getTenantId())
-                .totalRecordsIndexed(0).totalTimeTakenInMS(0L)
-                .auditDetails(
-                        indexerUtils.getAuditDetails(legacyindexRequest.getRequestInfo().getUserInfo().getUuid(), true))
-                .build();
-        legacyindexRequest.setJobId(job.getJobId());
-        legacyindexRequest.setStartTime(new Date().getTime());
-        IndexJobWrapper wrapper = IndexJobWrapper.builder().requestInfo(legacyindexRequest.getRequestInfo()).job(job)
-                .build();
-//		indexerProducer.producer(legacyIndexTopic, legacyindexRequest);
-        beginLegacyIndex(legacyindexRequest);
-        indexerProducer.producer(persisterCreate, wrapper);
 
-        legacyindexResponse.setJobId(job.getJobId());
+        // Initialize legacy index job
+        LegacyIndexJob job = (LegacyIndexJob) LegacyIndexJob.builder()
+                .jobId(UUID.randomUUID().toString())
+                .jobStatus(StatusEnum.INPROGRESS)
+                .typeOfJob(ConfigKeyEnum.LEGACYINDEX)
+                .requesterId(legacyIndexRequest.getRequestInfo().getUserInfo().getUuid())
+                .newIndex(index.getName() + "/" + index.getType())
+                .tenantId(legacyIndexRequest.getTenantId())
+                .totalRecordsIndexed(0).totalTimeTakenInMS(0L)
+                .auditDetails(indexerUtils.getAuditDetails(legacyIndexRequest.getRequestInfo().getUserInfo().getUuid(), true))
+                .build();
+
+        // Publish legacy index job to be persisted on database
+        indexerProducer.producer("save-legacy-index-job", job);
+
+        // Enrich legacy index request with the assigned job id
+        legacyIndexRequest.setJobId(job.getJobId());
+        legacyIndexRequest.setStartTime(new Date().getTime());
+
+        // Invoke method to create chunk jobs once main job is initialized
+        createLegacyIndexChunkJobs(legacyIndexRequest);
+
+        // Prepare legacy index response
+        LegacyIndexResponse legacyindexResponse = LegacyIndexResponse.builder()
+                .message("Please hit the 'url' after the legacy index job is complete.")
+                .url(url.toString())
+                .responseInfo(factory.createResponseInfoFromRequestInfo(legacyIndexRequest.getRequestInfo(), true))
+                .jobId(job.getJobId())
+                .build();
 
         return legacyindexResponse;
-    }
-
-    /**
-     * Method to start the index thread for indexing activity
-     *
-     * @param reindexRequest
-     * @return
-     */
-    public Boolean beginLegacyIndex(LegacyIndexRequest legacyIndexRequest) {
-        createLegacyIndexChunkJobs(legacyIndexRequest);
-        return true;
     }
 
     /**
@@ -156,15 +155,16 @@ public class LegacyIndexServiceV2 {
      * and transformations pas per the config and then posts the data to es in bulk
      * 5. The process repeats until all the records are indexed.
      *
-     * @param reindexRequest
+     * @param legacyIndexRequest
      */
-    private void createLegacyIndexChunkJobs(LegacyIndexRequest legacyIndexRequest) {
+    public void createLegacyIndexChunkJobs(LegacyIndexRequest legacyIndexRequest) {
 
         log.info("Job Started: " + legacyIndexRequest.getJobId());
         ObjectMapper mapper = indexerUtils.getObjectMapper();
+
+        // Initialize offset and count
         Integer offset = legacyIndexRequest.getApiDetails().getPaginationDetails().getStartingOffset();
         offset = offset == null ? 0 : offset;
-        Integer count = offset;
 
         // Make module _count call to fetch total number of records for a given tenantId
         Integer totalCount = 75;
@@ -173,7 +173,6 @@ public class LegacyIndexServiceV2 {
         Integer size = null != legacyIndexRequest.getApiDetails().getPaginationDetails().getMaxPageSize()
                 ? legacyIndexRequest.getApiDetails().getPaginationDetails().getMaxPageSize()
                 : defaultPageSizeForLegacyindex;
-        Boolean isProcessDone = false;
 
         while (offset < totalCount) {
             legacyIndexRequest.getApiDetails().getPaginationDetails().setStartingOffset(offset);
@@ -181,32 +180,64 @@ public class LegacyIndexServiceV2 {
             offset += size;
         }
 
-        if (isProcessDone) {
-            IndexJob job = IndexJob.builder().jobId(legacyIndexRequest.getJobId())
-                    .auditDetails(indexerUtils.getAuditDetails(
-                            legacyIndexRequest.getRequestInfo().getUserInfo().getUuid(), false))
-                    .totalRecordsIndexed(count)
-                    .totalTimeTakenInMS(new Date().getTime() - legacyIndexRequest.getStartTime())
-                    .jobStatus(StatusEnum.COMPLETED).build();
-            IndexJobWrapper wrapper = IndexJobWrapper.builder()
-                    .requestInfo(legacyIndexRequest.getRequestInfo()).job(job).build();
-            indexerProducer.producer(persisterUpdate, wrapper);
-        }
+        // Mark the legacy index job as completed once all chunks have been emitted
+        IndexJob job = prepareIndexJobEventForUpdatingStatus(legacyIndexRequest, StatusEnum.COMPLETED);
+
+        // Emit update event to mark the legacy index job as COMPLETED
+        indexerProducer.producer("update-legacy-index-job", job);
+
     }
 
+    public void processChunkJob(LegacyIndexRequest legacyIndexRequest) {
+        Integer offset = legacyIndexRequest.getApiDetails().getPaginationDetails().getStartingOffset();
+        Integer size = legacyIndexRequest.getApiDetails().getPaginationDetails().getMaxPageSize();
 
-    /**
-     * Child threads which perform the primary data transformation and pass it on to
-     * the esIndexer method
-     *
-     * @param reindexRequest
-     * @param mapper
-     * @param requestToReindex
-     * @param resultSize
-     */
-    public void childThreadExecutor(LegacyIndexRequest legacyIndexRequest, ObjectMapper mapper, Object response) {
+        String uri = indexerUtils.buildPagedUriForLegacyIndex(legacyIndexRequest.getApiDetails(), offset, size);
+
         try {
-            //log.info("childThreadExecutor + response----"+mapper.writeValueAsString(response));
+            // Get request body for external uri call to fetch legacy data.
+            Object request = prepareRequestForExternalUriCall(legacyIndexRequest);
+
+            // Make a paged call to the concerned service to fetch legacy data.
+            Object response = restTemplate.postForObject(uri, request, Map.class);
+
+            // If response is empty, emit event to mark job as failed.
+            if (ObjectUtils.isEmpty(response)) {
+                log.info("Request: " + request);
+                log.info("URI: " + uri);
+
+                // If exception occurs while fetching legacy data, emit event to mark job as failed.
+                IndexJob job = prepareIndexJobEventForUpdatingStatus(legacyIndexRequest, StatusEnum.FAILED);
+                indexerProducer.producer("update-legacy-index-job", job);
+
+                // Persist failed chunk job details in database.
+                indexerProducer.producer("save-failed-chunk-job", legacyIndexRequest);
+
+                return;
+            } else {
+                List<Object> searchResponse = JsonPath.read(response, legacyIndexRequest.getApiDetails().getResponseJsonPath());
+                if (!CollectionUtils.isEmpty(searchResponse)) {
+                    prepareAndEmitLegacyDataToKafka(legacyIndexRequest, indexerUtils.getObjectMapper(), response);
+                }
+            }
+        } catch (Exception e) {
+            log.info("JOB FAILED!!! Offset: " + offset + " Size: " + size);
+            log.error("Legacy Index Exception: ", e);
+
+            // If exception occurs while fetching legacy data, emit event to mark job as failed.
+            IndexJob job = prepareIndexJobEventForUpdatingStatus(legacyIndexRequest, StatusEnum.FAILED);
+            indexerProducer.producer("update-legacy-index-job", job);
+
+            // Persist failed chunk job details in database.
+            indexerProducer.producer("save-failed-chunk-job", legacyIndexRequest);
+
+            return;
+        }
+
+    }
+
+    public void prepareAndEmitLegacyDataToKafka(LegacyIndexRequest legacyIndexRequest, ObjectMapper mapper, Object response) {
+        try {
             if (legacyIndexRequest.getLegacyIndexTopic().equals(pgrLegacyTopic)) {
                 ServiceResponse serviceResponse = mapper.readValue(mapper.writeValueAsString(response),
                         ServiceResponse.class);
@@ -219,7 +250,6 @@ public class LegacyIndexServiceV2 {
                     propertyResponse.setProperties(ptCustomDecorator.transformData(propertyResponse.getProperties()));
                     indexerProducer.producer(legacyIndexRequest.getLegacyIndexTopic(), propertyResponse);
                 } else {
-                    //indexerProducer.producer(legacyIndexRequest.getLegacyIndexTopic(), response);
                     indexerService.esIndexer(legacyIndexRequest.getLegacyIndexTopic(), mapper.writeValueAsString(response));
                 }
             }
@@ -228,64 +258,24 @@ public class LegacyIndexServiceV2 {
         }
     }
 
-    public void processChunkJob(LegacyIndexRequest legacyIndexRequest) {
-        Integer offset = legacyIndexRequest.getApiDetails().getPaginationDetails().getStartingOffset();
-        Integer size = legacyIndexRequest.getApiDetails().getPaginationDetails().getMaxPageSize();
+    private Object prepareRequestForExternalUriCall(LegacyIndexRequest legacyIndexRequest) {
+        Object request = legacyIndexRequest.getApiDetails().getRequest();
 
-        String uri = indexerUtils.buildPagedUriForLegacyIndex(legacyIndexRequest.getApiDetails(),
-                offset, size);
-        Object request = null;
-        try {
-            request = legacyIndexRequest.getApiDetails().getRequest();
-            if (null == legacyIndexRequest.getApiDetails().getRequest()) {
-                HashMap<String, Object> map = new HashMap<>();
-                map.put("RequestInfo", legacyIndexRequest.getRequestInfo());
-                request = map;
-            }
-            Object response = restTemplate.postForObject(uri, request, Map.class);
-            if (null == response) {
-                log.info("Request: " + request);
-                log.info("URI: " + uri);
-                IndexJob job = IndexJob.builder().jobId(legacyIndexRequest.getJobId())
-                        .auditDetails(indexerUtils.getAuditDetails(
-                                legacyIndexRequest.getRequestInfo().getUserInfo().getUuid(), false))
-                        .totalTimeTakenInMS(new Date().getTime() - legacyIndexRequest.getStartTime())
-                        .jobStatus(StatusEnum.FAILED).build();
-                IndexJobWrapper wrapper = IndexJobWrapper.builder()
-                        .requestInfo(legacyIndexRequest.getRequestInfo()).job(job).build();
-                indexerProducer.producer(persisterUpdate, wrapper);
-                return;
-            } else {
-                List<Object> searchResponse = JsonPath.read(response, legacyIndexRequest.getApiDetails().getResponseJsonPath());
-                if (!CollectionUtils.isEmpty(searchResponse)) {
-                    childThreadExecutor(legacyIndexRequest, indexerUtils.getObjectMapper(), response);
-                }
-            }
-        } catch (Exception e) {
-            log.info("JOBFAILED!!! Offset: " + offset + " Size: " + size);
-            log.info("Request: " + request);
-            log.info("URI: " + uri);
-            log.error("Legacy-index Exception: ", e);
-            IndexJob job = IndexJob.builder().jobId(legacyIndexRequest.getJobId())
-                    .auditDetails(indexerUtils.getAuditDetails(
-                            legacyIndexRequest.getRequestInfo().getUserInfo().getUuid(), false))
-                    .totalTimeTakenInMS(new Date().getTime() - legacyIndexRequest.getStartTime())
-                    .jobStatus(StatusEnum.FAILED).build();
-            IndexJobWrapper wrapper = IndexJobWrapper.builder()
-                    .requestInfo(legacyIndexRequest.getRequestInfo()).job(job).build();
-            indexerProducer.producer(persisterUpdate, wrapper);
-            return;
+        // Prepare request if it is not provided in legacy index request
+        if (ObjectUtils.isEmpty(request)) {
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(REQUEST_INFO_IN_PASCAL_CASE, legacyIndexRequest.getRequestInfo());
+            request = map;
         }
 
-        IndexJob job = IndexJob.builder().jobId(legacyIndexRequest.getJobId())
-                .auditDetails(indexerUtils.getAuditDetails(
-                        legacyIndexRequest.getRequestInfo().getUserInfo().getUuid(), false))
-                .totalTimeTakenInMS(new Date().getTime() - legacyIndexRequest.getStartTime())
-                .jobStatus(StatusEnum.INPROGRESS).build();
-        IndexJobWrapper wrapper = IndexJobWrapper.builder()
-                .requestInfo(legacyIndexRequest.getRequestInfo()).job(job).build();
-        indexerProducer.producer(persisterUpdate, wrapper);
+        return request;
+    }
 
+    private IndexJob prepareIndexJobEventForUpdatingStatus(LegacyIndexRequest legacyIndexRequest, StatusEnum status) {
+        return IndexJob.builder().jobId(legacyIndexRequest.getJobId())
+                .totalTimeTakenInMS(new Date().getTime() - legacyIndexRequest.getStartTime())
+                .jobStatus(status)
+                .build();
     }
 }
 

@@ -79,12 +79,4 @@ public class IndexerController {
 
     }
 
-	@PostMapping("/v2/_legacyindex")
-	@ResponseBody
-	public ResponseEntity<?> legacyIndexDataV2(@Valid @RequestBody LegacyIndexRequest legacyIndexRequest){
-		validator.validaterLegacyindexRequest(legacyIndexRequest);
-		LegacyIndexResponse response = legacyIndexServiceV2.createLegacyindexJob(legacyIndexRequest);
-		return new ResponseEntity<>(response ,HttpStatus.OK);
-
-	}
 }

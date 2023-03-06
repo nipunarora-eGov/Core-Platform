@@ -22,15 +22,12 @@ public class LegacyIndexChunkJobListener {
     @Autowired
     private LegacyIndexServiceV2 legacyIndexServiceV2;
 
-    @KafkaListener(topics = {"${egov.ss.document.create.topic}"})
+    @KafkaListener(topics = {"${egov.legacy.index.chunk.jobs.topic}"})
     public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
         try {
-
             LegacyIndexRequest request = mapper.convertValue(record, LegacyIndexRequest.class);
-            //log.info(request.toString());
             legacyIndexServiceV2.processChunkJob(request);
-
         } catch (final Exception e) {
 
             log.error("Error while listening to value: " + record + " on topic: " + topic + ": ", e);
