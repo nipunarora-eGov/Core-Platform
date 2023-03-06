@@ -33,7 +33,7 @@ public class ErrorRetryValidator {
         }
          */
 
-        if(errorObject.getRetryCount() > maxRetries){
+        if(errorObject.getRetryCount() >= maxRetries){
             responseMap.put(ERROR_RETRY_ATTEMPT_FAILURE_CODE, "Cannot attempt to retry error beyond - " + maxRetries + " times.");
         }
 
