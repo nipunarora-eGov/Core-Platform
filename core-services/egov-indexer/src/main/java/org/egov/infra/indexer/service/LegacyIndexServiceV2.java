@@ -236,6 +236,7 @@ public class LegacyIndexServiceV2 {
 
     }
 
+    // Emit legacy data to kafka from where the configured kafka connector will pick up and index it
     public void prepareAndEmitLegacyDataToKafka(LegacyIndexRequest legacyIndexRequest, ObjectMapper mapper, Object response) {
         try {
             if (legacyIndexRequest.getLegacyIndexTopic().equals(pgrLegacyTopic)) {
@@ -271,6 +272,7 @@ public class LegacyIndexServiceV2 {
         return request;
     }
 
+    // Prepares index job event in accordance with the request and incoming status
     private IndexJob prepareIndexJobEventForUpdatingStatus(LegacyIndexRequest legacyIndexRequest, StatusEnum status) {
         return IndexJob.builder().jobId(legacyIndexRequest.getJobId())
                 .totalTimeTakenInMS(new Date().getTime() - legacyIndexRequest.getStartTime())
