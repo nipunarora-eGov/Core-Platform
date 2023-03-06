@@ -183,6 +183,13 @@ public class ExceptionAdvise {
         return new ResponseEntity<>(errorRes, HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * This method is an overloaded sister method of error handling interceptor method
+     * to enable modules to invoke it based on the error details they have prepared
+     * to allow them to store these errors and retry them.
+     *
+     * @param errorDetails
+     */
     public void exceptionHandler(List<ErrorDetail> errorDetails) {
         List<ErrorDetailDTO> errorDetailsForIndexing = new ArrayList<>();
 
@@ -212,39 +219,12 @@ public class ExceptionAdvise {
     }
 
 
-    private List<Error> getBindingErrors(BindingResult bindingResult, List<Error> errors) {
-
-        List<ObjectError> objectErrors = bindingResult.getAllErrors();
-
-        for (ObjectError objectError : objectErrors) {
-            Error error = new Error();
-            String[] codes = objectError.getCodes();
-            error.setCode(codes[0]);
-            error.setMessage(objectError.getDefaultMessage());
-            errors.add(error);
-        }
-
-        return errors;
-    }
-
-    private void populateCustomErrors(CustomException customException, List<Error> errors) {
-        Map<String, String> map = customException.getErrors();
-        if (map != null && !map.isEmpty()) {
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                Error error = new Error();
-                error.setCode(entry.getKey());
-                error.setMessage(entry.getValue());
-                errors.add(error);
-            }
-        } else {
-            Error error = new Error();
-            error.setCode(customException.getCode());
-            error.setMessage(customException.getMessage());
-            errors.add(error);
-        }
-
-    }
-
+    /**
+     * This method prepares error details in case of unhandled exceptions caught by tracer interceptor
+     * and invokes its sister exceptionHandler method to store it for retry.
+     * @param request
+     * @param ex
+     */
     private void prepareErrorDetailsAndInvokeExceptionHandler(HttpServletRequest request, Exception ex) {
         String contentType = request.getContentType();
         String body = "";
@@ -281,6 +261,40 @@ public class ExceptionAdvise {
 
         // Call exceptionHandler method to persist unhandled errors
         exceptionHandler(Collections.singletonList(errorDetail));
+    }
+
+
+    private List<Error> getBindingErrors(BindingResult bindingResult, List<Error> errors) {
+
+        List<ObjectError> objectErrors = bindingResult.getAllErrors();
+
+        for (ObjectError objectError : objectErrors) {
+            Error error = new Error();
+            String[] codes = objectError.getCodes();
+            error.setCode(codes[0]);
+            error.setMessage(objectError.getDefaultMessage());
+            errors.add(error);
+        }
+
+        return errors;
+    }
+
+    private void populateCustomErrors(CustomException customException, List<Error> errors) {
+        Map<String, String> map = customException.getErrors();
+        if (map != null && !map.isEmpty()) {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                Error error = new Error();
+                error.setCode(entry.getKey());
+                error.setMessage(entry.getValue());
+                errors.add(error);
+            }
+        } else {
+            Error error = new Error();
+            error.setCode(customException.getCode());
+            error.setMessage(customException.getMessage());
+            errors.add(error);
+        }
+
     }
 
     void sendErrorMessage(String body, Exception ex, String source, ErrorRes errorRes, boolean isJsonContentType) {
