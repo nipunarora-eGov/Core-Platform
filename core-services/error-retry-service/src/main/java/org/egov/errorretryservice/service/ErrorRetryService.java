@@ -74,29 +74,33 @@ public class ErrorRetryService {
         // Validate retry attempt.
         Map<String, Object> responseMap = validator.validateRetryAttempt(errorObject);
 
+        // If responseMap is empty after going through validation - this implies that the concerned error can be retried.
         if(CollectionUtils.isEmpty(responseMap)){
             incrementRetryCount(errorObject);
             try {
-                // Attempt retrying request
+                // Attempt retrying request.
                 Object apiBody = objectMapper.readValue(errorObject.getApiDetails().getRequestBody(), Map.class);
                 serviceRequestRepository.fetchResult(new StringBuilder(errorObject.getApiDetails().getUrl()), apiBody);
 
-                // Update status if request goes through successfully
+                // Update status if request goes through successfully.
                 errorObject.setStatus(Status.SUCCESSFUL);
                 producer.push(errorTopic, Collections.singletonList(errorObject));
             } catch (Exception ex) {
-                // Update error object in the index with incremented retry count in case request fails
+                // Update error object in the index with incremented retry count in case request fails.
                 errorObject.setStatus(Status.UNSUCCESSFUL);
                 producer.push(errorTopic, Collections.singletonList(errorObject));
             }
         } else{
+            // Prepare error retry response and send internal server error status to the client if the error can't be retried.
             ErrorRetryResponse errorRetryResponse = prepareErrorRetryResponse(errorRetryRequest.getRequestInfo(), errorRetryRequest.getId(), ERROR_RETRY_ATTEMPT_FAILURE_MSG, responseMap);
             return new ResponseEntity<>(errorRetryResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+        // In case the error is retried successfully, enrich responseMap and prepare error retry response.
         responseMap.put(ERROR_RETRY_ATTEMPT_SUCCESSFUL_CODE, ERROR_RETRY_ATTEMPT_SUCCESSFUL_MSG);
         ErrorRetryResponse errorRetryResponse = prepareErrorRetryResponse(errorRetryRequest.getRequestInfo(), errorRetryRequest.getId(), ERROR_RETRY_ATTEMPT_SUCCESSFUL_MSG, responseMap);
 
+        // Return success response in case the concerned error is retried successfully.
         return new ResponseEntity<>(errorRetryResponse, HttpStatus.ACCEPTED);
     }
 
