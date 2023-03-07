@@ -1,6 +1,7 @@
 package org.egov.errorretryservice.validators;
 
 import org.egov.tracer.model.ErrorDetailDTO;
+import org.egov.tracer.model.ErrorType;
 import org.egov.tracer.model.Status;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -24,12 +25,11 @@ public class ErrorRetryValidator {
             responseMap.put(ERROR_RETRY_ATTEMPT_FAILURE_CODE, ERROR_RETRY_ATTEMPT_STATUS_VALIDATION_FAILURE_MSG);
         }
 
-        /* WHAT SHOULD I CONSIDER IN CASE OF ERROR OBJECT WITH MULTIPLE STATUSES
-
-        if(errorObject.getErrorType().equals(ErrorType.NON_RECOVERABLE)){
-            responseMap.put("EG_RETRY_ATTEMPT_FAILURE", "Cannot retry NON RECOVERABLE errors.");
-        }
-         */
+        errorObject.getErrors().forEach(errorEntity -> {
+            if(errorEntity.getErrorType().equals(ErrorType.NON_RECOVERABLE)){
+                responseMap.put(ERROR_RETRY_ATTEMPT_FAILURE_CODE, ERROR_RETRY_ATTEMPT_ERROR_TYPE_VALIDATION_FAILURE_MSG);
+            }
+        });
 
         if(errorObject.getRetryCount() >= maxRetries){
             responseMap.put(ERROR_RETRY_ATTEMPT_FAILURE_CODE, "Cannot attempt to retry error beyond - " + maxRetries + " times.");

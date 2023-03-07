@@ -34,5 +34,6 @@ public class ERConstants {
 
     public static final String ERROR_RETRY_ATTEMPT_STATUS_VALIDATION_FAILURE_MSG = "Cannot attempt to retry error detail which is in successful status.";
 
+    public static final String ERROR_RETRY_ATTEMPT_ERROR_TYPE_VALIDATION_FAILURE_MSG = "Cannot retry NON RECOVERABLE errors.";
 
 }
