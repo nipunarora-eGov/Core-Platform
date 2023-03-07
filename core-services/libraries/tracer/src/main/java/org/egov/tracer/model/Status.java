@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum Status {
-    SUCCESSFUL("SUCCESSFUL"),
+    SUCCESS("SUCCESS"),
 
-    UNSUCCESSFUL("UNSUCCESSFUL");
+    FAILED("FAILED"),
+
+    PENDING("PENDING");
 
     private String value;
 

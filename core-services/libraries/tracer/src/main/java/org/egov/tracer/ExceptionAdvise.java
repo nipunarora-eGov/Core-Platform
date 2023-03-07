@@ -208,7 +208,7 @@ public class ExceptionAdvise {
 
             // Initialize values for error detail
             errorDetailDTO.setAuditDetails(auditDetails);
-            errorDetailDTO.setStatus(Status.UNSUCCESSFUL);
+            errorDetailDTO.setStatus(Status.PENDING);
             errorDetailDTO.setRetryCount(0);
             errorDetailsForIndexing.add(errorDetailDTO);
         });

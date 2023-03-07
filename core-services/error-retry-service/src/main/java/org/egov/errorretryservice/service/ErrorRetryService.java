@@ -51,6 +51,9 @@ public class ErrorRetryService {
     @Autowired
     private ResponseInfoFactory responseInfoFactory;
 
+    @Value("${max.retries.allowed}")
+    private Integer maxRetries;
+
     @Value("${error.queue.kafka.topic}")
     private String errorTopic;
 
@@ -83,11 +86,11 @@ public class ErrorRetryService {
                 serviceRequestRepository.fetchResult(new StringBuilder(errorObject.getApiDetails().getUrl()), apiBody);
 
                 // Update status if request goes through successfully.
-                errorObject.setStatus(Status.SUCCESSFUL);
+                errorObject.setStatus(Status.SUCCESS);
                 producer.push(errorTopic, Collections.singletonList(errorObject));
             } catch (Exception ex) {
                 // Update error object in the index with incremented retry count in case request fails.
-                errorObject.setStatus(Status.UNSUCCESSFUL);
+                errorObject.setStatus(fetchStatusInAccordanceWithRetryCount(errorObject.getRetryCount()));
                 producer.push(errorTopic, Collections.singletonList(errorObject));
             }
         } else{
@@ -156,5 +159,20 @@ public class ErrorRetryService {
                 .message(message)
                 .responseMap(responseMap)
                 .build();
+    }
+
+    /**
+     * This method accepts the number of times error has been retried and returns
+     * appropriate status accordingly.
+     *
+     * @param retryCount
+     * @return
+     */
+    private Status fetchStatusInAccordanceWithRetryCount(Integer retryCount) {
+        if(retryCount == maxRetries){
+            return Status.FAILED;
+        }else{
+            return Status.PENDING;
+        }
     }
 }

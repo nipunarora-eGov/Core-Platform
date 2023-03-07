@@ -20,7 +20,7 @@ public class ErrorRetryValidator {
     public Map validateRetryAttempt(ErrorDetailDTO errorObject){
         Map<String, Object> responseMap = new HashMap<>();
 
-        if(!ObjectUtils.isEmpty(errorObject.getStatus()) && errorObject.getStatus().equals(Status.SUCCESSFUL)){
+        if(!ObjectUtils.isEmpty(errorObject.getStatus()) && errorObject.getStatus().equals(Status.SUCCESS)){
             responseMap.put(ERROR_RETRY_ATTEMPT_FAILURE_CODE, ERROR_RETRY_ATTEMPT_STATUS_VALIDATION_FAILURE_MSG);
         }
 
