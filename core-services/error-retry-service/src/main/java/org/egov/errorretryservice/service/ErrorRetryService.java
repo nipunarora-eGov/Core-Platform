@@ -94,9 +94,9 @@ public class ErrorRetryService {
                 producer.push(errorTopic, Collections.singletonList(errorObject));
             }
         } else{
-            // Prepare error retry response and send internal server error status to the client if the error can't be retried.
+            // Prepare error retry response and send bad request status to the client if the error can't be retried.
             ErrorRetryResponse errorRetryResponse = prepareErrorRetryResponse(errorRetryRequest.getRequestInfo(), errorRetryRequest.getId(), ERROR_RETRY_ATTEMPT_FAILURE_MSG, responseMap);
-            return new ResponseEntity<>(errorRetryResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(errorRetryResponse, HttpStatus.BAD_REQUEST);
         }
 
         // In case the error is retried successfully, enrich responseMap and prepare error retry response.
