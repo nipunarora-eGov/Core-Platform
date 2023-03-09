@@ -30,5 +30,8 @@ public class TracerProperties {
     // Exclusion list for tracer filter
     private String filterSkipPattern;
 
+    // Flag to enable exceptions caught on tracer interceptor to be persisted on ElasticSearch.
+    private Boolean shouldPublishErrorDetailsFlag;
+
 }
 

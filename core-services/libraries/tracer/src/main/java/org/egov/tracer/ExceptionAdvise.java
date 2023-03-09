@@ -140,6 +140,8 @@ public class ExceptionAdvise {
             } else if (ex instanceof ServiceCallException) {
                 ServiceCallException serviceCallException = (ServiceCallException) ex;
                 sendErrorMessage(body, ex, request.getRequestURL().toString(), errorRes, isJsonContentType);
+                if(tracerProperties.getShouldPublishErrorDetailsFlag())
+                    prepareErrorDetailsAndInvokeExceptionHandler(request, ex);
                 DocumentContext documentContext = JsonPath.parse(serviceCallException.getError());
                 LinkedHashMap<Object, Object> linkedHashMap = documentContext.json();
                 return new ResponseEntity<>(linkedHashMap, HttpStatus.BAD_REQUEST);
@@ -168,7 +170,8 @@ public class ExceptionAdvise {
 
             if (errorRes.getErrors() == null || errorRes.getErrors().size() == 0) {
                 errorRes.setErrors(new ArrayList<>(Collections.singletonList(new Error(exceptionName, "An unhandled exception occurred on the server", exceptionMessage, null))));
-                prepareErrorDetailsAndInvokeExceptionHandler(request, ex);
+                if(tracerProperties.getShouldPublishErrorDetailsFlag())
+                    prepareErrorDetailsAndInvokeExceptionHandler(request, ex);
             } else if (provideExceptionInDetails && errorRes.getErrors() != null && errorRes.getErrors().size() > 0) {
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);
