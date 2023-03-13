@@ -194,6 +194,16 @@ public class ExceptionAdvise {
      * @param errorDetails
      */
     public void exceptionHandler(List<ErrorDetail> errorDetails) {
+
+        // Log incoming errors
+        errorDetails.forEach(errorDetail -> {
+            errorDetail.getErrors().forEach(errorEntity -> {
+                Exception ex = errorEntity.getException();
+                log.error(EXCEPTION_CAUGHT_IN_TRACER_MSG, ex);
+            });
+        });
+
+        // Initialize error details list for indexing
         List<ErrorDetailDTO> errorDetailsForIndexing = new ArrayList<>();
 
         // Prepare audit details
@@ -205,14 +215,18 @@ public class ExceptionAdvise {
             ErrorDetailDTO errorDetailDTO = new ErrorDetailDTO();
             BeanUtils.copyProperties(errorDetail, errorDetailDTO);
 
-            // Set uuid only if it is not empty
-            if(ObjectUtils.isEmpty(errorDetailDTO.getUuid()))
-                errorDetailDTO.setUuid(UUID.randomUUID().toString());
-
             // Initialize values for error detail
             errorDetailDTO.setAuditDetails(auditDetails);
             errorDetailDTO.setStatus(Status.PENDING);
-            errorDetailDTO.setRetryCount(0);
+
+            // Set uuid and retry count only if errorDetail does not have an id
+            if(ObjectUtils.isEmpty(errorDetailDTO.getApiDetails().getId())) {
+                errorDetailDTO.setUuid(UUID.randomUUID().toString());
+                errorDetailDTO.setRetryCount(0);
+            }else{
+                errorDetailDTO.setUuid(errorDetailDTO.getApiDetails().getId());
+            }
+
             errorDetailsForIndexing.add(errorDetailDTO);
         });
 
