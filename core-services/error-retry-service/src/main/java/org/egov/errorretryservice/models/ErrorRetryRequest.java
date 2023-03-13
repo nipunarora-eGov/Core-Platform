@@ -11,7 +11,7 @@ import org.egov.common.contract.request.RequestInfo;
 @ToString
 public class ErrorRetryRequest {
 
-    private String id;
+    private String uuid;
 
     private RequestInfo requestInfo;
 
