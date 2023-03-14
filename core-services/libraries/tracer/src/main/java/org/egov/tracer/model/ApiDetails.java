@@ -3,11 +3,14 @@ package org.egov.tracer.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.util.Map;
+
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Builder
 public class ApiDetails {
 
     @JsonProperty("id")
@@ -19,11 +22,14 @@ public class ApiDetails {
     @JsonProperty("contentType")
     private String contentType = null;
 
+    @JsonProperty("methodType")
+    private String methodType = null;
+
     @JsonProperty("requestBody")
     private String requestBody = null;
 
     @JsonProperty("requestHeaders")
-    private String requestHeaders = null;
+    private Map<String, Object> requestHeaders = null;
 
     @JsonProperty("additionalDetails")
     private Object additionalDetails = null;

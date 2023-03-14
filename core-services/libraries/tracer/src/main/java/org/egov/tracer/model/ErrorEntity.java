@@ -8,6 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Builder
 public class ErrorEntity {
     @JsonProperty("exception")
     private Exception exception = null;
