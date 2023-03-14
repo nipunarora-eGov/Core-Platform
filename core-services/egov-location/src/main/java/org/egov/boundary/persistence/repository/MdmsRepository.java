@@ -47,10 +47,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * Fetches data from MDMS service
@@ -80,7 +82,7 @@ public class MdmsRepository {
 	    this.masterName = masterName;			
 	}
 
-	public JSONArray getByCriteria(String tenantId,String hierarchyTypeCode,RequestInfo requestInfo) {
+	public JSONArray getByCriteria(String tenantId,String hierarchyTypeCode,String boundaryType,RequestInfo requestInfo) {
 		
 		MasterDetails[] masterDetails;
 		ModuleDetails[] moduleDetails;
@@ -89,9 +91,11 @@ public class MdmsRepository {
 		masterDetails = new MasterDetails[1];
 		moduleDetails = new ModuleDetails[1];
 		String filter = null;
-        if (hierarchyTypeCode != null && !hierarchyTypeCode.isEmpty()) {
-			filter = "[?(@." + "hierarchyType.code" + " in [" + hierarchyTypeCode.toUpperCase() + "])]";
+		if (!ObjectUtils.isEmpty(hierarchyTypeCode) || !ObjectUtils.isEmpty(boundaryType)){
+			filter = "[?({PLACEHOLDER})]";
+			filter = appendFilterPredicates(filter, hierarchyTypeCode, boundaryType);
 		}
+
 		masterDetails[0] = MasterDetails.builder().name(masterName)
 				.filter(filter).build();
 		moduleDetails[0] = ModuleDetails.builder().moduleName(moduleName).masterDetails(masterDetails).build();
@@ -116,7 +120,29 @@ public class MdmsRepository {
 		}
 	}
 
-    /**
+	private String appendFilterPredicates(String filter, String hierarchyTypeCode, String boundaryType) {
+
+		StringBuilder filterPredicate = new StringBuilder("");
+
+		if (!ObjectUtils.isEmpty(hierarchyTypeCode)){
+			addConditionIfRequired(filterPredicate);
+			filterPredicate.append("@.hierarchyType.code" + " in [" + hierarchyTypeCode.toUpperCase() + "]");
+		}
+		if (!ObjectUtils.isEmpty(boundaryType)){
+			addConditionIfRequired(filterPredicate);
+			filterPredicate.append("@.boundary.label" + " in [" + boundaryType + "]");
+		}
+
+		return filter.replace("{PLACEHOLDER}", filterPredicate.toString());
+	}
+
+	private void addConditionIfRequired(StringBuilder filterPredicate) {
+		if(!ObjectUtils.isEmpty(filterPredicate)){
+			filterPredicate.append(" && ");
+		}
+	}
+
+	/**
      * Retrieve data from MDMS service
      *
      * @param tenantId    State or District, formatted tenant id
