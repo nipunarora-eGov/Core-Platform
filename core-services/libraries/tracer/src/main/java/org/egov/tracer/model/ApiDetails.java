@@ -5,11 +5,9 @@ import lombok.*;
 
 import java.util.Map;
 
-@Setter
-@Getter
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
-@ToString
+@NoArgsConstructor
 @Builder
 public class ApiDetails {
 

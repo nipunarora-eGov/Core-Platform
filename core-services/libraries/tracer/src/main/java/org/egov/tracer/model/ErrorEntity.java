@@ -3,11 +3,9 @@ package org.egov.tracer.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-@Setter
-@Getter
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
-@ToString
+@NoArgsConstructor
 @Builder
 public class ErrorEntity {
     @JsonProperty("exception")
