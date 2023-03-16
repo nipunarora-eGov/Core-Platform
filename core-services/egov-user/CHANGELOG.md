@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this module will be documented in this file.
 
+## 1.2.8 - 2023-03-15
+- Fixed profile updation error for new user.
+- Added fallback for localization message empty error.
+- Fixed bug that made it possible for citizens to update any employee’s profile.
+
 ## 1.2.7 - 2022-02-02
 - Added security fixes for user enumerration issue.
 - Added size validation on user models
