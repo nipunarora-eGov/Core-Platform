@@ -117,8 +117,9 @@ public class EmployeeController {
 	@ResponseBody
 	public ResponseEntity<?> search(@RequestBody @Valid RequestInfoWrapper requestInfoWrapper, @ModelAttribute @Valid EmployeeSearchCriteria criteria, @RequestHeader Map<String, String> headers) {
 		validator.validateSearchRequest(requestInfoWrapper.getRequestInfo(), criteria);
-		String headerTenantId = headers.get("tenantid");
-		EmployeeResponse employeeResponse = employeeService.search(criteria, requestInfoWrapper.getRequestInfo(), headerTenantId);
+//		String headerTenantId = headers.get("tenantid");
+		String tenantId = criteria.getTenantId();
+		EmployeeResponse employeeResponse = employeeService.search(criteria, requestInfoWrapper.getRequestInfo(), tenantId);
 		return new ResponseEntity<>(employeeResponse,HttpStatus.OK);
 	}
 
