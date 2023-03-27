@@ -104,6 +104,12 @@ public class MetadataServiceImpl implements MetadataService {
 									});
 								}
 							}
+							// Check if filter exists in config then add into response config
+							if (dbNode.has("filter"))
+								copyDashboard.set("filter", dbNode.get("filter"));
+							// Check if filterConfig exists in config then add into response config
+							if (dbNode.has("filterConfig"))
+								copyDashboard.set("filterConfig", dbNode.get("filterConfig"));
 							copyDashboard.set(Constants.DashBoardConfig.NAME, name);
 							copyDashboard.set(Constants.DashBoardConfig.ID, id);
 							//add TITLE with varible dynamically

@@ -76,6 +76,8 @@ public class Constants {
 		final static String DATE_REF_FIELD = "dateRefField"; 
 		final static String AGGS = "aggs";
 		final static String AGGREGATIONS = "aggregations" ;
+		final static String HITS = "hits";
+		final static String HIT_SOURCE = "_source";
 		final static String MODULE = "module";
 		final static String INTERVAL_VAL = "intervalvalue";
 		final static String INTERVAL = "interval";
@@ -83,6 +85,12 @@ public class Constants {
 		final static String INSIGHT = "insight";
 		final static String DAYS = "days";
 		final static String TRANSLATE_CODE = "translateTenantCode";
+		final static String REPORT_NO_AGGS_JSON_PATH = "outputJsonPathForNoAggregation";
+		final static String PAGINATION_REQUEST_LIMIT = "limit";
+		final static String PAGINATION_REQUEST_OFFSET = "offset";
+		final static String PAGINATION_ES_QUERY_SORT = "sort";
+		final static String PAGINATION_ES_QUERY_LIMIT = "size";
+		final static String PAGINATION_ES_QUERY_OFFSET = "from";
 
 	}
 	
