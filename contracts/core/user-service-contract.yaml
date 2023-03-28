@@ -9,9 +9,9 @@ info:
     email: info@egovernments.org
   version: 1.1.0
 servers:
-- url: /users/v110
+- url: /users/
 paths:
-  /_create:
+  /citizen/_create:
     post:
       tags:
       - Users
@@ -49,7 +49,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorRes'
       x-codegen-request-body-name: users
-  /_update:
+  /citizen/_update:
     post:
       tags:
       - Users
@@ -81,7 +81,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorRes'
       x-codegen-request-body-name: users
-  /_search:
+  /citizen/_search:
     post:
       tags:
       - Users
@@ -210,6 +210,216 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorRes'
       x-codegen-request-body-name: requestInfo
+  /v1/_search:
+    post:
+      tags:
+      - Users
+      summary: Search the users in the system based on the criterion specified.
+      description: |
+        Search and get user(s) based on defined search criteria. Currently search parameters are only allowed as HTTP query params. In case multiple parameters are passed user will be searched as an AND combination of all the parameters. Maximum result size is restricted based on the maxlength of Users as defined in UserRes model.
+
+        By default results will be sorted by UserName
+      parameters:
+      - name: tenantId
+        in: query
+        description: Unique id for a tenant.
+        required: true
+        schema:
+          type: string
+          format: varchar
+      - name: lastChangedSince
+        in: query
+        description: |
+          epoch of the time since when the changes on the object should be picked up. Search results from this parameter should include both newly created objects since this time as well as any modified objects since this time. This criterion is included to help polling clients to get the changes in system since a last time they synchronized with the platform.
+        schema:
+          type: integer
+          format: int64
+      - name: userName
+        in: query
+        description: The unique user name of the User.
+        schema:
+          maxLength: 64
+          minLength: 0
+          type: string
+      - name: active
+        in: query
+        description: True will be set in cases where only active users are needed
+          and False will be set when inactive users are needed and no value will be
+          set when all users are needed.
+        allowEmptyValue: true
+        schema:
+          type: boolean
+          format: varchar
+          default: true
+      - name: id
+        in: query
+        description: List of Unique Id of User
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: integer
+      - name: userType
+        in: query
+        description: Defines the type of user. Possible values are as per type enum
+          defined in User object.
+        schema:
+          exclusiveMaximum: false
+          exclusiveMinimum: true
+          maxLength: 64
+          minLength: 0
+          type: string
+      - name: roleCodes
+        in: query
+        description: roles assigned to the user(roleCodes).Search response will have
+          all users having all roles specified in the request.
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+      - name: includeDetails
+        in: query
+        description: parameter to indicate whether UserDetails should be included
+          as a part of User object in the response
+        schema:
+          type: boolean
+          default: false
+      - name: pageSize
+        in: query
+        description: Number of records returned.
+        schema:
+          multipleOf: 10.0
+          maximum: 100
+          exclusiveMaximum: false
+          minimum: 0
+          exclusiveMinimum: true
+          type: integer
+          default: 20
+      - name: pageNumber
+        in: query
+        description: Page number
+        schema:
+          type: integer
+          default: 1
+      - name: sort
+        in: query
+        description: User results will be sorted by name ascending by default if this
+          parameter is not provided.
+        style: pipeDelimited
+        schema:
+          maxItems: 3
+          minItems: 1
+          uniqueItems: true
+          type: array
+          items:
+            pattern: '[-+](userName|name|gender)'
+            type: string
+          default: '["+name"]'
+      requestBody:
+        description: Parameter to carry Request metadata in the request body
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/RequestInfo'
+        required: false
+      responses:
+        200:
+          description: Successful response
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserRes'
+        400:
+          description: Invalid input.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorRes'
+      x-codegen-request-body-name: requestInfo    
+  /users/_createnovalidate:
+    post:
+      tags:
+      - Users
+      summary: Create user without otp vallidation
+      description: "End-point to create the user without otp validation."
+      requestBody:
+        description: Details for the new user + RequestInfo meta data
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/UserReq'
+        required: true
+      responses:
+        200:
+          description: Update user(s) successful
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserRes'
+        400:
+          description: Update user(s) failed
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorRes'
+      x-codegen-request-body-name: users  
+  /users/_updatenovalidate:
+    post:
+      tags:
+      - Users
+      summary: Update user without otp vallidation
+      description: "End-point to update the user without otp validation."
+      requestBody:
+        description: Details for the new user + RequestInfo meta data
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/UserReq'
+        required: true
+      responses:
+        200:
+          description: Update user(s) successful
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserRes'
+        400:
+          description: Update user(s) failed
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorRes'
+      x-codegen-request-body-name: users      
+  /profile/_update:
+    post:
+      tags:
+      - Users
+      summary: Update the profile of the user
+      description: "End-point to create the user without otp validation."
+      requestBody:
+        description: Details for the new user + RequestInfo meta data
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/UserReq'
+        required: true
+      responses:
+        200:
+          description: Update user(s) successful
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserRes'
+        400:
+          description: Update user(s) failed
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorRes'
+      x-codegen-request-body-name: users      
   /password/_update:
     post:
       tags:
@@ -266,6 +476,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorRes'
       x-codegen-request-body-name: Reset password before login using five digit otp
+  /_logout:
+    post:
+      tags:
+      - Logout 
+      summary: Logout user
+      description: "End-point to create the user without otp validation."
+      requestBody:
+        description: Details for the new user + RequestInfo meta data
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/TokenWrapper'
+        required: true
+      responses:
+        200:
+          description: logout successful
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResponseInfo'
+        400:
+          description: Update user(s) failed
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorRes'
+      x-codegen-request-body-name: logout  
 components:
   schemas:
     resetpasswordreq:
@@ -556,6 +793,12 @@ components:
       description: ResponseInfo should be used to carry metadata information about
         the response from the server. apiId, ver and msgId in ResponseInfo should
         always correspond to the same values in respective request's RequestInfo.
+    TokenWrapper:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: access-token required for authentication
     Error:
       required:
       - code

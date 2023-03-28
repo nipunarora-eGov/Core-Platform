@@ -17,6 +17,182 @@ info:
 x-module: FSM
 x-common-path: 'https://raw.githubusercontent.com/egovernments/municipal-services/common-contract/docs/common-contract-v2-0-0.yml'
 paths:
+  /vendor/v1/_create:
+    post:
+      tags:
+        - vendor-controller
+      summary: create
+      operationId: createUsingPOST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VendorRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/VendorResponse'
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /vendor/v1/_plainsearch:
+    post:
+      tags:
+        - vendor-controller
+      summary: plainsearch
+      operationId: plainsearchUsingPOST
+      parameters:
+        - name: driverIds
+          in: query
+          required: false
+          style: pipeDelimited
+          schema:
+            type: array
+            items:
+              type: string
+        - name: ids
+          in: query
+          required: false
+          style: pipeDelimited
+          schema:
+            type: array
+            items:
+              type: string
+        - name: limit
+          in: query
+          required: false
+          style: form
+          schema:
+            type: integer
+            format: int32
+        - name: mobileNumber
+          in: query
+          required: false
+          style: form
+          schema:
+            type: string
+        - name: name
+          in: query
+          required: false
+          style: pipeDelimited
+          schema:
+            type: array
+            items:
+              type: string
+        - name: offset
+          in: query
+          required: false
+          style: form
+          schema:
+            type: integer
+            format: int32
+        - name: ownerIds
+          in: query
+          required: false
+          style: pipeDelimited
+          schema:
+            type: array
+            items:
+              type: string
+        - name: sortBy
+          in: query
+          required: false
+          style: form
+          schema:
+            type: string
+            enum:
+              - createdTime
+              - driverIds
+              - ids
+              - mobileNumber
+              - name
+              - ownerIds
+              - status
+              - tenantId
+              - vehicleCapacity
+              - vehicleIds
+              - vehicleRegistrationNumber
+              - vehicleType
+              - vendor_createdTime
+        - name: sortOrder
+          in: query
+          required: false
+          style: form
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+        - name: status
+          in: query
+          required: false
+          style: pipeDelimited
+          schema:
+            type: array
+            items:
+              type: string
+        - name: tenantId
+          in: query
+          required: false
+          style: form
+          schema:
+            type: string
+        - name: vehicleCapacity
+          in: query
+          required: false
+          style: form
+          schema:
+            type: string
+        - name: vehicleIds
+          in: query
+          required: false
+          style: pipeDelimited
+          schema:
+            type: array
+            items:
+              type: string
+        - name: vehicleRegistrationNumber
+          in: query
+          required: false
+          style: pipeDelimited
+          schema:
+            type: array
+            items:
+              type: string
+        - name: vehicleType
+          in: query
+          required: false
+          style: form
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestInfoWrapper'
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/VendorResponse'
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
   /vendor/v1/_search:
     post:
       tags:
@@ -95,6 +271,7 @@ paths:
               - vehicleIds
               - vehicleRegistrationNumber
               - vehicleType
+              - vendor_createdTime
         - name: sortOrder
           in: query
           required: false
@@ -165,33 +342,7 @@ paths:
         '403':
           description: Forbidden
         '404':
-          description: Not Found
-  /vendor/v1/_create:
-    post:
-      tags:
-        - vendor-controller
-      summary: create
-      operationId: createUsingPOST
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/VendorRequest'
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/VendorResponse'
-        '201':
-          description: Created
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-        '404':
-          description: Not Found
+          description: Not Found        
   /vendor/v1/_update:
     post:
       tags:
@@ -218,6 +369,7 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
+          
   /vendor/driver/v1/_create:
     post:
       tags:
@@ -396,6 +548,44 @@ paths:
           description: Not Found        
 components:
   schemas:
+    Address:
+      title: Address
+      type: object
+      properties:
+        additionalDetails:
+          type: object
+        auditDetails:
+          $ref: '#/components/schemas/AuditDetails'
+        buildingName:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        district:
+          type: string
+        doorNo:
+          type: string
+        geoLocation:
+          $ref: '#/components/schemas/GeoLocation'
+        id:
+          type: string
+        landmark:
+          type: string
+        locality:
+          $ref: '#/components/schemas/Boundary'
+        pincode:
+          type: string
+        plotNo:
+          type: string
+        region:
+          type: string
+        state:
+          type: string
+        street:
+          type: string
+        tenantId:
+          type: string
     AuditDetails:
       title: AuditDetails
       type: object
@@ -409,7 +599,30 @@ components:
           type: string
         lastModifiedTime:
           type: integer
-          format: int64  
+          format: int64
+    Boundary:
+      title: Boundary
+      required:
+        - code
+        - name
+      type: object
+      properties:
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/Boundary'
+        code:
+          type: string
+        label:
+          type: string
+        latitude:
+          type: string
+        longitude:
+          type: string
+        materializedPath:
+          type: string
+        name:
+          type: string
     Driver:
       title: Driver
       type: object
@@ -471,6 +684,21 @@ components:
         totalCount:
           type: integer
           format: int32
+    GeoLocation:
+      title: GeoLocation
+      type: object
+      properties:
+        additionalDetails:
+          type: object
+        id:
+          type: string
+          description: latitude of the address
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
     PlainAccessRequest:
       title: PlainAccessRequest
       type: object
@@ -480,7 +708,7 @@ components:
           items:
             type: string
         recordId:
-          type: string  
+          type: string
     RequestInfo:
       title: RequestInfo
       type: object
@@ -508,6 +736,12 @@ components:
           $ref: '#/components/schemas/User0'
         ver:
           type: string
+    RequestInfoWrapper:
+      title: RequestInfoWrapper
+      type: object
+      properties:
+        RequestInfo:
+          $ref: '#/components/schemas/RequestInfo'
     ResponseInfo:
       title: ResponseInfo
       type: object
@@ -524,6 +758,25 @@ components:
           type: integer
           format: int64
         ver:
+          type: string
+    Role:
+      title: Role
+      type: object
+      properties:
+        code:
+          maxLength: 50
+          minLength: 0
+          type: string
+        id:
+          type: integer
+          format: int64
+        name:
+          maxLength: 128
+          minLength: 0
+          type: string
+        tenantId:
+          maxLength: 256
+          minLength: 0
           type: string
     User:
       title: User
@@ -667,7 +920,7 @@ components:
         uuid:
           maxLength: 64
           minLength: 0
-          type: string       
+          type: string
     User0:
       title: User0
       type: object
@@ -706,98 +959,112 @@ components:
         uuid:
           maxLength: 36
           minLength: 0
-          type: string      
-    RequestInfoWrapper:
-      title: RequestInfoWrapper
-      type: object
-      properties:
-        RequestInfo:
-          $ref: '#/components/schemas/RequestInfo'
-    Role:
-      title: Role
-      type: object
-      properties:
-        code:
-          maxLength: 50
-          minLength: 0
           type: string
-        id:
+    Vehicle:
+      title: Vehicle
+      type: object
+      properties:
+        InsuranceCertValidTill:
           type: integer
           format: int64
+        additionalDetails:
+          type: object
+        auditDetails:
+          $ref: '#/components/schemas/AuditDetails'
+        fitnessValidTill:
+          type: integer
+          format: int64
+        gpsEnabled:
+          type: boolean
+        id:
+          type: string
+        model:
+          type: string
+        owner:
+          $ref: '#/components/schemas/User'
+        pollutionCertiValidTill:
+          type: integer
+          format: int64
+        registrationNumber:
+          type: string
+        roadTaxPaidTill:
+          type: integer
+          format: int64
+        source:
+          type: string
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - DISABLED
+            - INACTIVE
+        suctionType:
+          type: string
+        tankCapacity:
+          type: integer
+          format: int64
+        tenantId:
+          type: string
+        type:
+          type: string
+        vendorVehicleStatus:
+          type: string
+          enum:
+            - ACTIVE
+            - DISABLED
+            - INACTIVE
+    Vendor:
+      title: Vendor
+      type: object
+      properties:
+        additionalDetails:
+          type: object
+        address:
+          $ref: '#/components/schemas/Address'
+        agencyType:
+          maxLength: 128
+          minLength: 0
+          type: string
+        auditDetails:
+          $ref: '#/components/schemas/AuditDetails'
+        description:
+          type: string
+        drivers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Driver'
+        id:
+          type: string
         name:
           maxLength: 128
           minLength: 0
           type: string
-        tenantId:
-          maxLength: 256
-          minLength: 0
-          type: string      
-    Vendor:
-      type: object
-      description: | 
-       Capture the vendor information in the system.
-      properties:
-        id:
-          type: string
-          readOnly: true
-          description: The server generated unique ID(UUID).
-          minLength: 2
-          maxLength: 64
-        tenantId:
-          type: string
-          description: Unique identifier of the tenant.
-          minLength: 2
-          maxLength: 64
-        name: 
-          type: string
-          description: Name of the vendor(business entity name).
-          minLength: 2
-          maxLength: 128
-        agencyType: 
-          type: string
-          description: Agency Type of the vendor configured in MDMS.
-          minLength: 1
-          maxLength: 128
-        paymentPreference: 
-          type: string
-          description: Payment Preference of the vendor configured in MDMS.
-          minLength: 1
-          maxLength: 128
-        address:
-          $ref: 'https://raw.githubusercontent.com/egovernments/municipal-services/common-contract/docs/common-contract-v2-0-0.yml#/components/schemas/Address'
         owner:
-          $ref: 'https://raw.githubusercontent.com/egovernments/municipal-services/common-contract/docs/common-contract-v2-0-0.yml#/components/schemas/UserInfo'
+          $ref: '#/components/schemas/User'
+        ownerId:
+          maxLength: 64
+          minLength: 0
+          type: string
+        paymentPreference:
+          maxLength: 128
+          minLength: 0
+          type: string
+        source:
+          type: string
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - DISABLED
+            - INACTIVE
+        tenantId:
+          maxLength: 64
+          minLength: 0
+          type: string
         vehicles:
           type: array
           items:
-            $ref: 'https://raw.githubusercontent.com/egovernments/municipal-services/fsm-docs/docs/fsm/Vehicle_Registry_Contract.yaml'
-        drivers:
-          type: array
-          items:
-            $ref: 'https://raw.githubusercontent.com/egovernments/municipal-services/common-contract/docs/common-contract-v2-0-0.yml#/components/schemas/UserInfo'
-        additionalDetail:
-          type: object
-          description: This is the json object that will carry the actual input (whereever the metadata requries input). Structure should be same as the schema definition provided in the metadata of the service (schema compliance check to be performed at client/server)
-        source:
-          type: string
-          description: 'Source mdms master data. Which captures the source of the service request(ex:- whatsapp, ivr, Swachhata etc)'
-          minLength: 2
-          maxLength: 64
-          example: whatsapp, ivr etc
-        status:
-          type: string
-          description: Inactive records will be consider as soft deleted 
-          enum:
-           - ACTIVE
-           - INACTIVE
-        auditDetails:
-          $ref: 'https://raw.githubusercontent.com/egovernments/municipal-services/common-contract/docs/common-contract-v2-0-0.yml#/components/schemas/AuditDetails'
-      required:
-        - tenantId
-        - name
-        - address
-        - owner
-        - vehicles
+            $ref: '#/components/schemas/Vehicle'
     VendorRequest:
       title: VendorRequest
       type: object

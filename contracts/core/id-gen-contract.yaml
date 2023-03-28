@@ -19,9 +19,9 @@ info:
     name: Pranav
   version: 1.0.0
 servers:
-- url: https://egov-micro-dev.egovernments.org/id/v1/
+- url: https://dev.digit.org/egov-idgen/
 paths:
-  /_genearte:
+  /id/_generate:
     post:
       tags:
       - Property

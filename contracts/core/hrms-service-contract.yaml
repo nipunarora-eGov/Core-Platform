@@ -11,7 +11,7 @@ info:
     name: Vishal Mahuli
   version: 1.0.0
 servers:
-- url: /rainmaker-hrms/[API endpoint]
+- url: /egov-hrms/[API endpoint]
 paths:
   /employees/_search:
     post:

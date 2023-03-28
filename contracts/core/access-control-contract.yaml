@@ -171,7 +171,7 @@ paths:
   /access/v1/roles/_search:
     post:
       tags:
-      - Feature-Role
+      - Role
       summary: Get the list of roles based on role codes.
       description: |
         Get the list of roles based on role codes in the input parameters.

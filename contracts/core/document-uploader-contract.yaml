@@ -10,8 +10,7 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0
   version: '1.0'
 servers:
-  - url: http://localhost:8080
-    description: Inferred Url
+  - url: https://dev.digit.org
 tags:
   - name: document-controller
     description: Document Controller

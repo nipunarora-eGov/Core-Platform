@@ -673,7 +673,7 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
-  /preexistpayments/_update":
+  /preexistpayments/_update:
     post:
       tags:
       - pre-exist-payment-controller

@@ -7,7 +7,7 @@ info:
     email: info@egovernments.org
   version: 1.1.0
 servers:
-- url: /egov-otp/v110
+- url: /egov-otp/
 paths:
   /otp/v1/_create:
     post:

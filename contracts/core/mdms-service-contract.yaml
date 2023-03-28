@@ -7,9 +7,9 @@ info:
     name: Abhishek Jain
   version: 1.0.0
 servers:
-- url: /mdms/v1/[API endpoint]
+- url: /
 paths:
-  /egov-mdms-service/_search:
+  /egov-mdms-service/v1/_search:
     post:
       tags:
       - mdms-controller
@@ -37,7 +37,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorRes'
       x-codegen-request-body-name: MdmsCriteriaReq
-  /egov-mdms-service/_get:
+  /egov-mdms-service/v1/_get:
     post:
       tags:
       - mdms-controller
