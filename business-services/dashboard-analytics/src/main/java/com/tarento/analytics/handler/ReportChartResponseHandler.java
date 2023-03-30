@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.*;
@@ -62,9 +63,9 @@ public class ReportChartResponseHandler implements IResponseHandler {
             sno.setLabel(String.valueOf(srNo));
             plotList.add(sno);
             outputJSONPaths.forEach((jsonPathObj) -> {
-                String path = jsonPathObj.get("path").asText();
-                String dataType = jsonPathObj.get("dataType").asText();
-                String columnName = jsonPathObj.get("columnName").asText();
+                String path = jsonPathObj.get(Constants.JsonPaths.NO_AGGR_JSON_FIELD_PATH).asText();
+                String dataType = jsonPathObj.get(Constants.JsonPaths.NO_AGGR_JSON_FIELD_DATA_TYPE).asText();
+                String columnName = jsonPathObj.get(Constants.JsonPaths.NO_AGGR_JSON_FIELD_COLUMN_NAME).asText();
                 String val = null;
                 try {
                     val = JsonPath.read(sourceData.toString(), "$."+path).toString();
@@ -101,7 +102,7 @@ public class ReportChartResponseHandler implements IResponseHandler {
         });
         ArrayNode aggrsPaths = (ArrayNode) chartNode.get(IResponseHandler.AGGS_PATH);
         List<Data> dataList = new ArrayList<>();
-        if (!aggrsPaths.isEmpty()) {
+        if (aggrsPaths != null && !aggrsPaths.isEmpty()) {
             List<JsonNode> aggrNodes = aggregationNode.findValues(BUCKETS);
             Map<String, String> levelValues = new HashMap<String, String>();
             aggrNodes.stream().forEach(node -> {
@@ -120,7 +121,7 @@ public class ReportChartResponseHandler implements IResponseHandler {
         levelValues.put(aggrsPaths.get(idx).asText(), aggregationNode.get(KEY).asText());
 
         List<JsonNode> aggrNodes = aggregationNode.findValues(BUCKETS);
-        if (aggrNodes.isEmpty()) {
+        if (CollectionUtils.isEmpty(aggrNodes)) {
             int srNo = dataList.size() + 1;
             List<Plot> plotList = createPlotList(aggregationNode, aggrsPaths, levelValues, dataTypeMap, srNo);
             Data data = new Data(String.valueOf(srNo), srNo, null);

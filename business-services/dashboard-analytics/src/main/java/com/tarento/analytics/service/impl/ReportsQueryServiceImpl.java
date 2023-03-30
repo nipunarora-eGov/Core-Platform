@@ -33,14 +33,14 @@ public class ReportsQueryServiceImpl {
         if (hasAggQuery)
             aggrQuery = query.get(Constants.JsonPaths.AGGREGATION_QUERY).asText();
 
-        if(interval!=null && !interval.isEmpty() && hasAggQuery && !aggrQuery.isEmpty())
+        if(interval!=null && !interval.isEmpty() && hasAggQuery && aggrQuery != null && !aggrQuery.isEmpty())
             aggrQuery = aggrQuery.replace(Constants.JsonPaths.INTERVAL_VAL, interval);
 
         // Get search query
         ObjectNode objectNode = getQuery(request, query, indexName, hasAggQuery);
 
         try {
-            if (hasAggQuery && !aggrQuery.isEmpty()) {
+            if (hasAggQuery && aggrQuery != null && !aggrQuery.isEmpty()) {
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode aggrNode = mapper.readTree(aggrQuery).get(Constants.JsonPaths.AGGS);
                 objectNode.put(Constants.JsonPaths.AGGS, mapper.readTree(aggrQuery).get(Constants.JsonPaths.AGGS));
@@ -100,11 +100,10 @@ public class ReportsQueryServiceImpl {
                     objectNode.put(Constants.JsonPaths.PAGINATION_ES_QUERY_OFFSET, query.get(Constants.JsonPaths.PAGINATION_REQUEST_OFFSET).asLong());
                 }
                 // Put sort query if sortBy and sortOrder both exists
-                if (query.has("sortBy") && query.has("sortOrder")) {
-                    String sortBy = query.get("sortBy").asText();
-                    String sortOrder = query.get("sortOrder").asText();
+                if (query.has(Constants.JsonPaths.CHART_CONFIG_SORTBY) && query.has(Constants.JsonPaths.CHART_CONFIG_SORT_ORDER)) {
+                    String sortBy = query.get(Constants.JsonPaths.CHART_CONFIG_SORTBY).asText();
+                    String sortOrder = query.get(Constants.JsonPaths.CHART_CONFIG_SORT_ORDER).asText();
                     JsonNode sortQuery = getSortQuery(sortBy, sortOrder);
-                    System.out.println("Sort query " + sortQuery.toString());
                     objectNode.put(Constants.JsonPaths.PAGINATION_ES_QUERY_SORT, sortQuery);
                 }
             }

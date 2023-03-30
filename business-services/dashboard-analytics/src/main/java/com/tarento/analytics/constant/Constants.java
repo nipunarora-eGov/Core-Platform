@@ -86,11 +86,19 @@ public class Constants {
 		final static String DAYS = "days";
 		final static String TRANSLATE_CODE = "translateTenantCode";
 		final static String REPORT_NO_AGGS_JSON_PATH = "outputJsonPathForNoAggregation";
+		final static String NO_AGGR_JSON_FIELD_PATH = "path";
+		final static String NO_AGGR_JSON_FIELD_DATA_TYPE = "dataType";
+		final static String NO_AGGR_JSON_FIELD_COLUMN_NAME = "columnName";
 		final static String PAGINATION_REQUEST_LIMIT = "limit";
 		final static String PAGINATION_REQUEST_OFFSET = "offset";
 		final static String PAGINATION_ES_QUERY_SORT = "sort";
 		final static String PAGINATION_ES_QUERY_LIMIT = "size";
 		final static String PAGINATION_ES_QUERY_OFFSET = "from";
+		final static String CHART_CONFIG_SORTBY = "sortBy";
+		final static String CHART_CONFIG_SORT_ORDER = "sortOrder";
+		final static String MASTER_CONFIG_FILTER = "filter";
+		final static String MASTER_CONFIG_FILTER_CONFIG = "filterConfig";
+
 
 	}
 	

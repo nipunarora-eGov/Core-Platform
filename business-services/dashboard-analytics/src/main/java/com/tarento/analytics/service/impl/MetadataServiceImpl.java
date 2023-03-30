@@ -103,13 +103,13 @@ public class MetadataServiceImpl implements MetadataService {
 										visArray.add(visual);
 									});
 								}
+								// Check if filter exists in config then add into response config
+								if (dbNode.has(Constants.JsonPaths.MASTER_CONFIG_FILTER))
+									copyDashboard.set(Constants.JsonPaths.MASTER_CONFIG_FILTER, dbNode.get(Constants.JsonPaths.MASTER_CONFIG_FILTER));
+								// Check if filterConfig exists in config then add into response config
+								if (dbNode.has(Constants.JsonPaths.MASTER_CONFIG_FILTER_CONFIG))
+									copyDashboard.set(Constants.JsonPaths.MASTER_CONFIG_FILTER_CONFIG, dbNode.get(Constants.JsonPaths.MASTER_CONFIG_FILTER_CONFIG));
 							}
-							// Check if filter exists in config then add into response config
-							if (dbNode.has("filter"))
-								copyDashboard.set("filter", dbNode.get("filter"));
-							// Check if filterConfig exists in config then add into response config
-							if (dbNode.has("filterConfig"))
-								copyDashboard.set("filterConfig", dbNode.get("filterConfig"));
 							copyDashboard.set(Constants.DashBoardConfig.NAME, name);
 							copyDashboard.set(Constants.DashBoardConfig.ID, id);
 							//add TITLE with varible dynamically

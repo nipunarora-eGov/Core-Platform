@@ -157,7 +157,7 @@ public class TarentoServiceImpl implements ClientService {
 
 				String indexName = query.get(Constants.JsonPaths.INDEX_NAME).asText();
 				ObjectNode objectNode = null;
-				if (chartNode.get(Constants.JsonPaths.CHART_TYPE).asText().equals("report")) {
+				if (chartNode.get(Constants.JsonPaths.CHART_TYPE).asText().equals(ChartType.REPORT.toString())) {
 					objectNode = reportsQueryService.getChartConfigurationReportQuery(request, query, chartNode, indexName, interval);
 				} else {
 					objectNode = queryService.getChartConfigurationQuery(request, query, indexName, interval);
