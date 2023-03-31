@@ -49,10 +49,10 @@ public class EmployeeRepository {
 	 * @param requestInfo
 	 * @return
 	 */
-	public List<Employee> fetchEmployees(EmployeeSearchCriteria criteria, RequestInfo requestInfo){
+	public List<Employee> fetchEmployees(EmployeeSearchCriteria criteria, RequestInfo requestInfo, String stateLevelTenantId){
 		List<Employee> employees = new ArrayList<>();
 		List<Object> preparedStmtList = new ArrayList<>();
-		String stateLevelTenantId = centralInstanceUtil.getStateLevelTenant(criteria.getTenantId());
+
 		if(hrmsUtils.isAssignmentSearchReqd(criteria)) {
 			List<String> empUuids = fetchEmployeesforAssignment(criteria, requestInfo, stateLevelTenantId);
 			if (CollectionUtils.isEmpty(empUuids))

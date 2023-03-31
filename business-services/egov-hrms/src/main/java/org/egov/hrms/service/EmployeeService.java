@@ -207,12 +207,13 @@ public class EmployeeService {
 			}
 		}
 
+		String stateLevelTenantId = centralInstanceUtil.getStateLevelTenant(criteria.getTenantId());
 		if(userChecked)
 			criteria.setTenantId(null);
 
 		List <Employee> employees = new ArrayList<>();
         if(!((!CollectionUtils.isEmpty(criteria.getRoles()) || !CollectionUtils.isEmpty(criteria.getNames()) || !StringUtils.isEmpty(criteria.getPhone())) && CollectionUtils.isEmpty(criteria.getUuids())))
-            employees = repository.fetchEmployees(criteria, requestInfo);
+            employees = repository.fetchEmployees(criteria, requestInfo, stateLevelTenantId);
         List<String> uuids = employees.stream().map(Employee :: getUuid).collect(Collectors.toList());
 		if(!CollectionUtils.isEmpty(uuids)){
             Map<String, Object> UserSearchCriteria = new HashMap<>();
