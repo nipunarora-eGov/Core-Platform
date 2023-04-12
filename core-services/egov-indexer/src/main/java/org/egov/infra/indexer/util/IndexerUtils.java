@@ -188,7 +188,7 @@ public class IndexerUtils {
 								queryParam = JsonPath.read(kafkaJson, queryParamExpression[1].trim());
 							else {
 								queryParam = JsonPath.read(kafkaJson, paramElements[1]);
-								paramElements[0].concat((String)JsonPath.read(kafkaJson, paramElements[1]));
+								queryParam = paramElements[0].concat((String)queryParam);
 							}
 
 						}else {
