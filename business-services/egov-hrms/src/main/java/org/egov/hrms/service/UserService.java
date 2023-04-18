@@ -54,6 +54,7 @@ import org.egov.hrms.utils.HRMSConstants;
 import org.egov.hrms.web.contract.UserRequest;
 import org.egov.hrms.web.contract.UserResponse;
 import org.egov.tracer.model.CustomException;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -92,6 +93,11 @@ public class UserService {
 
 	private String internalMicroserviceRoleUuid = null;
 
+	@Autowired
+	private MultiStateInstanceUtil multiStateInstanceUtil;
+
+	public static final String TENANTID_MDC_STRING = "TENANTID";
+
 	@PostConstruct
 	void initalizeSystemuser(){
 		RequestInfo requestInfo = new RequestInfo();
@@ -101,6 +107,9 @@ public class UserService {
 		userSearchRequest.put("RequestInfo", requestInfo);
 		userSearchRequest.put("tenantId", propertiesManager.getParentLevelTenantId());
 		userSearchRequest.put("roleCodes", Collections.singletonList(INTERNALMICROSERVICEROLE_CODE));
+		if(multiStateInstanceUtil.getIsEnvironmentCentralInstance()){
+			MDC.put(TENANTID_MDC_STRING, propertiesManager.getStateLevelTenantId());
+		}
 		try {
 			LinkedHashMap<String, Object> responseMap = (LinkedHashMap<String, Object>) restCallRepository.fetchResult(uri, userSearchRequest);
 			List<LinkedHashMap<String, Object>> users = (List<LinkedHashMap<String, Object>>) responseMap.get("user");
