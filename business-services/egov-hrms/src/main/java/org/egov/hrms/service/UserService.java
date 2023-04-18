@@ -105,7 +105,7 @@ public class UserService {
 		uri.append(propertiesManager.getUserHost()).append(propertiesManager.getUserSearchEndpoint()); // URL for user search call
 		Map<String, Object> userSearchRequest = new HashMap<>();
 		userSearchRequest.put("RequestInfo", requestInfo);
-		userSearchRequest.put("tenantId", propertiesManager.getParentLevelTenantId());
+		userSearchRequest.put("tenantId", propertiesManager.getStateLevelTenantId());
 		userSearchRequest.put("roleCodes", Collections.singletonList(INTERNALMICROSERVICEROLE_CODE));
 		if(multiStateInstanceUtil.getIsEnvironmentCentralInstance()){
 			MDC.put(TENANTID_MDC_STRING, propertiesManager.getStateLevelTenantId());
