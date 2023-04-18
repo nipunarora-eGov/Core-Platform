@@ -54,7 +54,6 @@ public class PasswordControllerTest {
     private Resources resources = new Resources();
 
     @Test
-    @Ignore
     @WithMockUser
     public void test_should_update_password_for_logged_in_user() throws Exception {
         mockMvc.perform(post("/password/_update")
@@ -75,7 +74,6 @@ public class PasswordControllerTest {
     }
 
     @Test
-    @Ignore
     @WithMockUser
     public void test_should_update_password_for_non_logged_in_user() throws Exception {
         mockMvc.perform(post("/password/nologin/_update")

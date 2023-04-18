@@ -83,7 +83,6 @@ public class UserControllerTest {
     private CustomAuthenticationKeyGenerator authenticationKeyGenerator;
 
     @Test
-    @Ignore
     @WithMockUser
     public void test_should_search_users() throws Exception {
         final UserSearchCriteria expectedSearchCriteria = UserSearchCriteria.builder()
@@ -100,7 +99,6 @@ public class UserControllerTest {
     }
 
     @Test
-    @Ignore
     @WithMockUser
     public void test_should_search_for_active_users() throws Exception {
         final UserSearchCriteria expectedSearchCriteria = UserSearchCriteria.builder()
@@ -116,7 +114,6 @@ public class UserControllerTest {
     }
 
     @Test
-    @Ignore
     @WithMockUser
     public void test_should_search_for_in_active_users() throws Exception {
         final UserSearchCriteria expectedSearchCriteria = UserSearchCriteria.builder()
@@ -133,7 +130,6 @@ public class UserControllerTest {
     }
 
     @Test
-    @Ignore
     @WithMockUser
     public void test_should_search_for_active_and_in_active_users_via_v1_endpoint() throws Exception {
         final UserSearchCriteria expectedSearchCriteria = UserSearchCriteria.builder()
@@ -150,7 +146,6 @@ public class UserControllerTest {
     }
 
     @Test
-    @Ignore
     @WithMockUser
     public void test_should_search_for_in_active_users_via_v1_endpoint() throws Exception {
         final UserSearchCriteria expectedSearchCriteria = UserSearchCriteria.builder()
@@ -167,7 +162,6 @@ public class UserControllerTest {
     }
 
     @Test
-    @Ignore
     @WithMockUser
     public void test_should_search_for_active_users_via_v1_endpoint() throws Exception {
         final UserSearchCriteria expectedSearchCriteria = UserSearchCriteria.builder()
@@ -184,8 +178,8 @@ public class UserControllerTest {
 
 
     @Test
-    @WithMockUser
     @Ignore
+    @WithMockUser
     public void test_should_return_error_response_when_user_search_is_invalid() throws Exception {
         final UserSearchCriteria invalidSearchCriteria = UserSearchCriteria.builder().build();
         when(userService.searchUsers(any(), true, any())).thenThrow(new InvalidUserSearchCriteriaException(invalidSearchCriteria));
@@ -199,7 +193,6 @@ public class UserControllerTest {
 
     @Test
     @WithMockUser
-    @Ignore
     public void test_should_update_user_profile() throws Exception {
         when(userService.partialUpdate(any(), any())).thenReturn(org.egov.user.domain.model.User.builder().build());
 
@@ -212,8 +205,8 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
     @Ignore
+    @WithMockUser
     public void test_should_update_user_details() throws Exception {
 
         org.egov.user.domain.model.User userRequest = org.egov.user.domain.model.User.builder().name("foo").username("userName").dob(new Date("04/08/1986")).guardian("name of relative").build();
@@ -227,8 +220,8 @@ public class UserControllerTest {
                 .andExpect(content().json(getFileContents("userCreateSuccessResponse.json")));
     }
 
-    @Ignore
     @Test
+    @Ignore
     @WithMockUser
     public void test_should_create_citizen() throws Exception {
         final Date expectedDate = toDate(LocalDateTime.of(1986, 8, 4, 5, 30));
@@ -249,7 +242,6 @@ public class UserControllerTest {
     }
 
     @Test
-    @Ignore
     @WithMockUser
     public void test_should_create_user_without_otp_validation() throws Exception {
         final Date expectedDate = toDate(LocalDateTime.of(1986, 8, 4, 0, 0));
@@ -277,7 +269,6 @@ public class UserControllerTest {
     }
 
     @Test
-    @Ignore
     @WithMockUser
     public void testUserDetails() throws Exception {
         OAuth2Authentication oAuth2Authentication = mock(OAuth2Authentication.class);
