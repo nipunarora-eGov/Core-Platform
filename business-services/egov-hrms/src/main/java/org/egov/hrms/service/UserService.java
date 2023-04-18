@@ -127,10 +127,10 @@ public class UserService {
 		//Creating role with INTERNAL_MICROSERVICE_ROLE
 		Role role = Role.builder()
 				.name(INTERNALMICROSERVICEROLE_NAME).code(INTERNALMICROSERVICEROLE_CODE)
-				.tenantId(propertiesManager.getParentLevelTenantId()).build();
+				.tenantId(propertiesManager.getStateLevelTenantId()).build();
 		User user = User.builder().userName(INTERNALMICROSERVICEUSER_USERNAME)
 				.name(INTERNALMICROSERVICEUSER_NAME).mobileNumber(INTERNALMICROSERVICEUSER_MOBILENO)
-				.type(INTERNALMICROSERVICEUSER_TYPE).tenantId(propertiesManager.getParentLevelTenantId())
+				.type(INTERNALMICROSERVICEUSER_TYPE).tenantId(propertiesManager.getStateLevelTenantId())
 				.roles(Collections.singletonList(role)).id(0L).build();
 
 		userCreateRequest.put("RequestInfo", requestInfo);
