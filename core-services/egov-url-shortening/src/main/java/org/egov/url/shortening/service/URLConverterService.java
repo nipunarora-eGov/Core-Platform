@@ -116,14 +116,15 @@ public class URLConverterService {
         
         if(stateSpecificHostName.endsWith("/"))
             stateSpecificHostName = stateSpecificHostName.substring(0, stateSpecificHostName.length() - 1);
+        String hostname = stateSpecificHostName.substring(stateSpecificHostName.indexOf("/")+2);
+        hostname.trim();
         if(serverContextPath.startsWith("/"))
         	serverContextPath = serverContextPath.substring(1);
-        shortenedUrl.append(stateSpecificHostName).append("/").append(serverContextPath);
+        shortenedUrl.append(hostname).append("/").append(serverContextPath);
         if(!serverContextPath.endsWith("/")) {
         	shortenedUrl.append("/");
         }
     	shortenedUrl.append(uniqueID);
-    	
         return shortenedUrl.toString();
     }
 
