@@ -53,13 +53,15 @@ public class PGRStatusUpdateEventFormatter implements SystemInitiatedEventFormat
 
     private String citizenKeywordLocalization = "chatbot.template.citizen";
 
-    @Value("${state.level.tenantid}")
+    @Value("${state.level.tenant.id}")
     private String stateLevelTenantId;
+    
     @Value("${egov.external.host}")
     private String egovExternalHost;
 
     @Value("${user.service.host}")
     private String userServiceHost;
+    
     @Value("${user.service.search.path}")
     private String userServiceSearchPath;
 
@@ -68,6 +70,7 @@ public class PGRStatusUpdateEventFormatter implements SystemInitiatedEventFormat
 
     @Value("${pgr.service.host}")
     private String pgrServiceHost;
+    
     @Value("${pgr.service.search.path}")
     private String pgrServiceSearchPath;
 
