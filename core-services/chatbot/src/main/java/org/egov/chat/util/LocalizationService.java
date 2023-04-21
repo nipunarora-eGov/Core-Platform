@@ -33,7 +33,7 @@ public class LocalizationService {
     private String localizationHost;
     @Value("${localization.service.search.path}")
     private String localizationSearchPath;
-    @Value("${state.level.tenantid}")
+    @Value("${state.level.tenant.id}")
     private String stateLevelTenantId;
     @Value("#{'${supported.locales}'.split(',')}")
     private List<String> supportedLocales;

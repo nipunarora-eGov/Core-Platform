@@ -48,7 +48,7 @@ public class URLConverterService {
     @Value("${server.contextPath}")
     private String serverContextPath;
 
-    @Value("${state.level.tenantid}")
+    @Value("${state.level.tenant.id}")
     private String stateLevelTenantId;
 
     @Value("${egov.user.host}")

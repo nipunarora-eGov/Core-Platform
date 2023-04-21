@@ -98,7 +98,7 @@ public class ApplicationConfiguration {
     @Getter
     private String userSearchEndpoint;
     
-    @Value("${state.level.tenantid}")
+    @Value("${state.level.tenant.id}")
     @Getter
     private String stateTenantId;
 
