@@ -1,6 +1,23 @@
 package org.egov.wf.service;
 
-import com.jayway.jsonpath.JsonPath;
+import static org.egov.wf.util.WorkflowConstants.JSONPATH_BUSINESSSERVICE_STATELEVEL;
+import static org.egov.wf.util.WorkflowConstants.MDMS_AUTOESCALTION;
+import static org.egov.wf.util.WorkflowConstants.MDMS_BUSINESSSERVICE;
+import static org.egov.wf.util.WorkflowConstants.MDMS_COMMON_MASTERS;
+import static org.egov.wf.util.WorkflowConstants.MDMS_MODULE_TENANT;
+import static org.egov.wf.util.WorkflowConstants.MDMS_TENANTS;
+import static org.egov.wf.util.WorkflowConstants.MDMS_WF_SLA_CONFIG;
+import static org.egov.wf.util.WorkflowConstants.MDMS_WORKFLOW;
+import static org.egov.wf.util.WorkflowConstants.SLOT_PERCENTAGE_PATH;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.mdms.model.MasterDetail;
 import org.egov.mdms.model.MdmsCriteria;
@@ -8,16 +25,12 @@ import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.mdms.model.ModuleDetail;
 import org.egov.wf.config.WorkflowConfig;
 import org.egov.wf.repository.ServiceRequestRepository;
-import org.egov.wf.util.WorkflowConstants;
-import org.egov.wf.web.models.ProcessInstanceRequest;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-
-import static org.egov.wf.util.WorkflowConstants.*;
+import com.jayway.jsonpath.JsonPath;
 
 @Service
 public class MDMSService {
@@ -50,14 +63,13 @@ public class MDMSService {
     @Bean
     public void stateLevelMapping(){
        
-       // Adding in MDC so that tracer can add it in header for central insatnce calls
+       // Adding in MDC so that tracer can add it in header for central instance calls
         MDC.put(TENANTID_MDC_STRING, workflowConfig.getStateLevelTenantId());
        
         Map<String, Boolean> stateLevelMapping = new HashMap<>();
 
         Object mdmsData = getBusinessServiceMDMS();
         List<HashMap<String, Object>> configs = JsonPath.read(mdmsData,JSONPATH_BUSINESSSERVICE_STATELEVEL);
-
 
         for (Map map : configs){
 
