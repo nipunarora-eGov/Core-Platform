@@ -84,7 +84,7 @@ public class WorkflowConfig {
 
 
     // Statelevel tenantId required for escalation
-    @Value("${state.level.tenantid}")
+    @Value("${state.level.tenant.id}")
     private String stateLevelTenantId;
 
     @Value("${egov.wf.escalation.batch.size}")

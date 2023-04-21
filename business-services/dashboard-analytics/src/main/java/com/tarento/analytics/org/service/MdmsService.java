@@ -37,7 +37,7 @@ public class MdmsService {
     @Autowired
     private ObjectMapper mapper;
 
-    @Value("${egov.statelevel.tenantId}")
+    @Value("${state.level.tenant.id}")
     private  String stateLevelTenantId ;
 
     @PostConstruct

@@ -37,7 +37,7 @@ public class UserUtils {
     private Map<String, String> stateLevelTenantMap;
     
 	@Getter
-    @Value("${egov.statelevel.tenant}")
+    @Value("${state.level.tenant.id}")
     private String stateLevelTenant;
 
     @Value("${egov.auth-service-host}${egov.user.search.path}")

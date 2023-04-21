@@ -45,7 +45,7 @@ public class KeyManagementService implements ApplicationRunner {
     @Value("${egov.mdms.search.endpoint}")
     private String mdmsEndpoint;
 
-    @Value(("${egov.state.level.tenant.id}"))
+    @Value(("${state.level.tenant.id}"))
     private String stateLevelTenantId;
 
     @Autowired
