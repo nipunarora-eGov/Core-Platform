@@ -39,7 +39,7 @@ public class PGRCustomDecorator {
 	@Autowired
 	private RestTemplate restTemplate;
 
-	@Value("${egov.statelevel.tenantId}")
+	@Value("${state.level.tenantid}")
 	private  String stateLevelTenantId ;
 
 	/**
