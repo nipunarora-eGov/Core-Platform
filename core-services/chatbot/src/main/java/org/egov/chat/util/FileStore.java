@@ -47,7 +47,7 @@ public class FileStore {
 
     @Value("${module.name}")
     private String moduleName;
-    @Value("${state.level.tenant.id}")
+    @Value("${state.level.tenantid}")
     private String stateLevelTenantId;
 
     public String downloadAndStore(String getLink) {
