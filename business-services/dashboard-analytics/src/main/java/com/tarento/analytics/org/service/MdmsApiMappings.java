@@ -54,7 +54,7 @@ public class MdmsApiMappings {
     @Autowired
     private ObjectMapper mapper;
 
-    @Value("${egov.statelevel.tenantId}")
+    @Value("${state.level.tenantid}")
     private  String stateLevelTenantId ;
 
     public String valueOf(String code){
