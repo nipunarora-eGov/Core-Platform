@@ -10,6 +10,7 @@ import org.egov.wf.config.WorkflowConfig;
 import org.egov.wf.repository.ServiceRequestRepository;
 import org.egov.wf.util.WorkflowConstants;
 import org.egov.wf.web.models.ProcessInstanceRequest;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,10 @@ public class MDMSService {
    private WorkflowConfig workflowConfig;
 
    private Map<String,Boolean> stateLevelMapping;
+   
+   public static final String TENANTID_MDC_STRING = "TENANTID";
+   
+   
 
     @Autowired
     public MDMSService(WorkflowConfig config, ServiceRequestRepository serviceRequestRepository, WorkflowConfig workflowConfig) {
@@ -44,6 +49,10 @@ public class MDMSService {
 
     @Bean
     public void stateLevelMapping(){
+       
+       // Adding in MDC so that tracer can add it in header for central insatnce calls
+        MDC.put(TENANTID_MDC_STRING, workflowConfig.getStateLevelTenantId());
+       
         Map<String, Boolean> stateLevelMapping = new HashMap<>();
 
         Object mdmsData = getBusinessServiceMDMS();
