@@ -32,7 +32,7 @@ public class EncryptionDecryptionUtil {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Value(("${state.level.tenant.id}"))
+    @Value(("${state.level.tenantid}"))
     private String stateLevelTenantId;
 
     @Value(("${decryption.abac.enabled}"))
