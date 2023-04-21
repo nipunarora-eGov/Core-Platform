@@ -29,7 +29,7 @@ public class ShortenController {
     @Autowired
     private MultiStateInstanceUtil multiStateInstanceUtil;
 
-    @Value("${state.level.tenant.id}")
+    @Value("${state.level.tenantid}")
     private String stateTenantId;
 
     @Value("${is.environment.multi.instance:false}")
