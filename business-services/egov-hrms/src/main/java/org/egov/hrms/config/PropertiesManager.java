@@ -108,7 +108,7 @@ public class PropertiesManager {
 	@Value("${open.search.enabled.roles}")
 	public String openSearchEnabledRoles;
 
-	@Value("${state.level.tenant.id}")
+	@Value("${state.level.tenantid}")
 	public String stateLevelTenantId;
 
 	@Value("${parent.level.tenant.id}")
