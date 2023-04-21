@@ -33,11 +33,11 @@ import lombok.extern.slf4j.Slf4j;
 public class UserUtils {
 	
 	@Getter
-    @Value("#{${egov.statelevel.tenant.map:{}}}")
+    @Value("#{${state.level.tenantid.map:{}}}")
     private Map<String, String> stateLevelTenantMap;
     
 	@Getter
-    @Value("${egov.statelevel.tenant}")
+    @Value("${state.level.tenantid}")
     private String stateLevelTenant;
 
     @Value("${egov.auth-service-host}${egov.user.search.path}")
