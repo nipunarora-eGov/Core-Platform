@@ -2,6 +2,7 @@ package org.egov.wf.repository;
 
 
 import org.egov.wf.repository.querybuilder.EscalationQueryBuilder;
+import org.egov.wf.util.WorkflowConstants;
 import org.egov.wf.web.models.EscalationSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -37,6 +38,7 @@ public class EscalationRepository {
 
         List<Object> preparedStmtList = new ArrayList<>();
         String query = queryBuilder.getEscalationQuery(criteria, preparedStmtList);
+        query = query.replaceAll(WorkflowConstants.HISTORY_REPLACE_STRING, WorkflowConstants.HISTORY_REPLACEMENT_STRING);
         List<String> businessIds = jdbcTemplate.query(query, preparedStmtList.toArray(),  new SingleColumnRowMapper<>(String.class));
         return  businessIds;
 

@@ -17,7 +17,11 @@ public class MigrationJob {
     @JsonProperty("id")
     private String id;
 
-    private Status status;
+    @JsonProperty("tenantId")
+    private String tenantId;
+
+    @JsonProperty("migrationStatus")
+    private MigrationStatus migrationStatus;
 
     @JsonProperty("startOffset")
     private Integer startOffset;

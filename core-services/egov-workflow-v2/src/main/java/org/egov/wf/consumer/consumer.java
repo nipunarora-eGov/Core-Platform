@@ -1,6 +1,6 @@
 
 
-package org.egov.wf.producer;
+package org.egov.wf.consumer;
 
         import com.fasterxml.jackson.databind.ObjectMapper;
         import lombok.extern.slf4j.Slf4j;

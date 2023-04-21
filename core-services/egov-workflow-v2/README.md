@@ -54,7 +54,7 @@ Please refer to the [Swagger API contract](https://editor.swagger.io/?url=https:
         "states": [...]
     }
 ```
-   Each State object is a valid status for the application. The State object contains the information of the state and what actions can be performed on it.
+   Each State object is a valid migrationStatus for the application. The State object contains the information of the state and what actions can be performed on it.
 
 ```json
 {

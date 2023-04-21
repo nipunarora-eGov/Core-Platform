@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
@@ -16,18 +15,22 @@ class WorkflowConfigTest {
     void testInitialize() {
 
         WorkflowConfig workflowConfig = new WorkflowConfig("UTC", 1, 1, 3, "Save Transition Topic",
-                "Save Business Service Topic", "2020-03-01", "localhost", "https://config.us-east-2.amazonaws.com",
+                "Save Business Service Topic", "Update Business Service Topic", "Migrate Processinstance topic",
+                "Migration Topic", "Job Audit details topic", "localhost", "https://config.us-east-2.amazonaws.com",
                 "localhost", "https://config.us-east-2.amazonaws.com", true, "MD", 3, 3, true);
         workflowConfig.initialize();
         assertTrue(workflowConfig.getAssignedOnly());
         assertEquals("https://config.us-east-2.amazonaws.com", workflowConfig.getUserSearchEndpoint());
         assertEquals("localhost", workflowConfig.getUserHost());
-        assertEquals("2020-03-01", workflowConfig.getUpdateBusinessServiceTopic());
         assertEquals("UTC", workflowConfig.getTimeZone());
         assertEquals(3, workflowConfig.getStateLevelTenantIdLength().intValue());
         assertEquals("MD", workflowConfig.getStateLevelTenantId());
         assertEquals("Save Transition Topic", workflowConfig.getSaveTransitionTopic());
         assertEquals("Save Business Service Topic", workflowConfig.getSaveBusinessServiceTopic());
+        assertEquals("Update Business Service Topic", workflowConfig.getUpdateBusinessServiceTopic());
+        assertEquals("Migrate Processinstance topic", workflowConfig.getPersisterMigrationTopic());
+        assertEquals("Migration Topic", workflowConfig.getMigrationTopic());
+        assertEquals("Job Audit details topic", workflowConfig.getMigrationJob());
         assertEquals("localhost", workflowConfig.getMdmsHost());
         assertEquals("https://config.us-east-2.amazonaws.com", workflowConfig.getMdmsEndPoint());
         assertEquals(3, workflowConfig.getMaxSearchLimit().intValue());

@@ -69,7 +69,7 @@ public class WorkflowConfig {
     private String migrationTopic;
 
     @Value("${persister.migrate.wf.audit.details.topic}")
-    private String jobAuditDetailsTopic;
+    private String migrationJob;
 
 
     //MDMS

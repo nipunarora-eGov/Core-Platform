@@ -14,8 +14,7 @@ public class EscalationQueryBuilder {
 
     private static final String BASE_QUERY = "select businessId from (" +
             "  SELECT *,RANK () OVER (PARTITION BY businessId ORDER BY createdtime  DESC) rank_number " +
-            " FROM eg_wf_processinstance_v2 WHERE businessservice = ? AND tenantid= ? ) wf  WHERE rank_number = 1 ";
-
+            " FROM eg_wf_processinstance_v2{HISTORY_FLAG} WHERE businessservice = ? AND tenantid= ? ) wf  WHERE rank_number = 1 ";
 
     /**
      * Builds query for searching escalated applications

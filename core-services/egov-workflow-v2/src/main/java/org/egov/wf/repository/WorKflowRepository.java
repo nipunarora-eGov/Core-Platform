@@ -4,8 +4,10 @@ package org.egov.wf.repository;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.wf.repository.querybuilder.WorkflowQueryBuilder;
+import org.egov.wf.repository.rowmapper.MigrationJobRowMapper;
 import org.egov.wf.repository.rowmapper.WorkflowRowMapper;
 import org.egov.wf.util.WorkflowUtil;
+import org.egov.wf.web.models.MigrationJob;
 import org.egov.wf.web.models.ProcessInstance;
 import org.egov.wf.web.models.ProcessInstanceSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,13 +15,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.egov.wf.util.WorkflowConstants.HISTORY_REPLACE_STRING;
+import static org.egov.wf.util.WorkflowConstants.*;
 
 @Repository
 @Slf4j
@@ -30,6 +31,8 @@ public class WorKflowRepository {
     private JdbcTemplate jdbcTemplate;
 
     private WorkflowRowMapper rowMapper;
+    @Autowired
+    private MigrationJobRowMapper migrationJobRowMapper;
 
     private WorkflowUtil util;
 
@@ -59,9 +62,9 @@ public class WorKflowRepository {
         String query = queryBuilder.getProcessInstanceSearchQueryById(ids, preparedStmtList);
         query = util.replaceSchemaPlaceholder(query, criteria.getTenantId());
         if(criteria.getHistory())
-            query = query.replaceAll(HISTORY_REPLACE_STRING, "_history");
+            query = query.replaceAll(HISTORY_REPLACE_STRING, HISTORY_REPLACEMENT_STRING);
         else
-            query = query.replaceAll(HISTORY_REPLACE_STRING, "_active");
+            query = query.replaceAll(HISTORY_REPLACE_STRING, ACTIVE_REPLACEMENT_STRING);
         log.debug("query for status search: " + query + " params: " + preparedStmtList);
 
         return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
@@ -94,6 +97,13 @@ public class WorKflowRepository {
         return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
     }
 
+    public List<MigrationJob> searchMigrationJob(String tenantId){
+        List<Object> preparedStmtList = new ArrayList<>();
+        String query = queryBuilder.prepareMigrationJobIdQuery(tenantId, preparedStmtList);
+        query = util.replaceSchemaPlaceholder(query, tenantId);
+        return jdbcTemplate.query(query, preparedStmtList.toArray(), migrationJobRowMapper);
+    }
+
 
 
     /**
@@ -123,6 +133,10 @@ public class WorKflowRepository {
         criteria.setIsAssignedToMeCount(true);
         String query = queryBuilder.getInboxIdCount(criteria, (ArrayList<Object>) preparedStmtList);
         query = util.replaceSchemaPlaceholder(query, criteria.getTenantId());
+        if(criteria.getHistory())
+            query = query.replaceAll(HISTORY_REPLACE_STRING, HISTORY_REPLACEMENT_STRING);
+        else
+            query = query.replaceAll(HISTORY_REPLACE_STRING, ACTIVE_REPLACEMENT_STRING);
         Integer count =  jdbcTemplate.queryForObject(query, preparedStmtList.toArray(), Integer.class);
         return count;
     }
@@ -182,9 +196,9 @@ public class WorKflowRepository {
         String query = queryBuilder.getProcessInstanceIds(criteria,preparedStmtList);
 
         if(criteria.getHistory()) {
-            query = query.replaceAll(HISTORY_REPLACE_STRING, "_history");
+            query = query.replaceAll(HISTORY_REPLACE_STRING, HISTORY_REPLACEMENT_STRING);
         } else if(!criteria.getHistory()){
-            query = query.replaceAll(HISTORY_REPLACE_STRING, "_active");
+            query = query.replaceAll(HISTORY_REPLACE_STRING, ACTIVE_REPLACEMENT_STRING);
         }
         query = util.replaceSchemaPlaceholder(query, criteria.getTenantId());
 

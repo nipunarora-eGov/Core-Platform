@@ -1,9 +1,10 @@
-package org.egov.wf.producer;
+package org.egov.wf.consumer;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.egov.tracer.model.CustomException;
 import org.egov.wf.service.WorkflowMigrationService;
 import org.egov.wf.web.models.MigrationRequest;
 import org.egov.wf.web.models.ProcessInstanceSearchCriteria;
@@ -31,9 +32,9 @@ public class MigrationConsumer {
         MigrationRequest migrationRequest = objectMapper.convertValue(record, MigrationRequest.class);
         try {
             workflowMigrationService.migrate(migrationRequest);
-        }
-        catch (Exception ex){
-            log.error("Not able to process from topic" + ex);
+        } catch (Exception ex) {
+            log.error("Not able to process from topic " + ex);
+            throw new CustomException();
         }
 
     }

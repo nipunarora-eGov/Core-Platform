@@ -108,6 +108,7 @@ public class WorkflowController {
      * @param criteria
      * @return
      */
+
     @RequestMapping(value = "/process/_statuscount", method = RequestMethod.POST)
     public ResponseEntity<List> StatusCount(@Valid @RequestBody StatusCountRequest statusCountRequest,
             @Valid @ModelAttribute ProcessInstanceSearchCriteria criteria) {
