@@ -49,9 +49,9 @@ public class MdmsFetcher {
 
         MdmsCriteriaReq mdmsCriteriaReq = MdmsCriteriaReq.builder().requestInfo(RequestInfo.builder().build())
                 .mdmsCriteria(mdmsCriteria).build();
-        if(multiStateInstanceUtil.getIsEnvironmentCentralInstance()){
-            MDC.put(TENANTID_MDC_STRING, encProperties.getStateLevelTenantId());
-        }
+
+        // Adding tenantId to MDC for making enc-client library compatible with central instance
+        MDC.put(TENANTID_MDC_STRING, encProperties.getStateLevelTenantId());
 
         try {
             ResponseEntity<MdmsResponse> response =
