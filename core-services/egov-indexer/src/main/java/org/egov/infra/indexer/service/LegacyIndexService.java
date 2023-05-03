@@ -212,6 +212,7 @@ public class LegacyIndexService {
                                     count += size;
                                     log.info("Size of res: " + searchResponse.size() + " and Count: " + count
                                             + " and offset: " + offset);
+
                                 } else {
                                     if (count > size) {
                                         count = (count - size) + presentCount;
@@ -250,8 +251,9 @@ public class LegacyIndexService {
                         IndexJobWrapper wrapper = IndexJobWrapper.builder()
                                 .requestInfo(legacyIndexRequest.getRequestInfo()).job(job).build();
                         indexerProducer.producer(persisterUpdate, wrapper);
-
                         offset += size;
+                        threadRun = false;
+                        break;
                     }
                     if (isProccessDone) {
                         IndexJob job = IndexJob.builder().jobId(legacyIndexRequest.getJobId())
