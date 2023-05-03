@@ -225,7 +225,7 @@ public class DemandQueryBuilder {
 	}
 
 	public String getDemandIdsQuery(DemandCriteria demandCriteria, List<Object> preparedStatementValues) {
-		String finalIdsQuery = "SELECT id FROM ( {INTERNAL_QUERY} ) AS id";
+		String finalIdsQuery = "SELECT did FROM ( {INTERNAL_QUERY} ) AS did";
 		StringBuilder demandIdsQuery = new StringBuilder(DEMAND_IDS_QUERY);
 
 		String tenantId = demandCriteria.getTenantId();
