@@ -47,6 +47,10 @@ import java.util.Map;
 
 import javax.validation.Valid;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.jayway.jsonpath.internal.filter.ValueNode;
 import org.egov.collection.model.Payment;
 import org.egov.collection.model.PaymentRequest;
 import org.egov.collection.model.PaymentResponse;
@@ -83,6 +87,9 @@ public class PaymentController {
     @Autowired
     private PaymentWorkflowService workflowService;
 
+    @Autowired
+    private ObjectMapper mapper;
+
     @RequestMapping(path = {"/_search","/{moduleName}/_search"}, method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<?> search(@ModelAttribute PaymentSearchCriteria paymentSearchCriteria,
@@ -110,6 +117,9 @@ public class PaymentController {
 			return new ResponseEntity<>(responseMap, HttpStatus.OK);
 		} else {
 			List<Payment> payments = paymentService.getPayments(requestInfo, paymentSearchCriteria, moduleName);
+            for(Payment payment : payments){
+                payment.setAdditionalDetails(mapper.convertValue(new HashMap<>(), JsonNode.class));
+            }
 			return getSuccessResponse(payments, requestInfo);
 		}
     }
