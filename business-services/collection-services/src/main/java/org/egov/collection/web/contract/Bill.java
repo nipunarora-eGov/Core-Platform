@@ -62,8 +62,8 @@ public class Bill {
     @JsonProperty("isCancelled")
     private Boolean isCancelled = null;
 
-    @JsonProperty("additionalDetails")
-    private JsonNode additionalDetails = null;
+//    @JsonProperty("additionalDetails")
+//    private JsonNode additionalDetails = null;
 
     @JsonProperty("billDetails")
     @Valid

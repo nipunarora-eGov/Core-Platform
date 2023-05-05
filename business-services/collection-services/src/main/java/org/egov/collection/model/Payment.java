@@ -71,8 +71,8 @@ public class Payment {
     @JsonProperty("auditDetails")
     private AuditDetails auditDetails;
 
-    @JsonProperty("additionalDetails")
-    private JsonNode additionalDetails;
+//    @JsonProperty("additionalDetails")
+//    private JsonNode additionalDetails;
 
     @JsonProperty("paymentDetails")
     @Valid

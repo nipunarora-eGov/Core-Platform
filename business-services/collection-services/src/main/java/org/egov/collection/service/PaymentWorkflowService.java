@@ -157,8 +157,8 @@ public class PaymentWorkflowService {
                 bill.setStatus(Bill.StatusEnum.CANCELLED);
                 bill.setIsCancelled(true);
                 bill.setReasonForCancellation(workflowRequestByPaymentId.get(payment.getId()).getReason());
-                bill.setAdditionalDetails(jsonMerge(bill.getAdditionalDetails(),
-                        workflowRequestByPaymentId.get(payment.getId()).getAdditionalDetails()));
+//                bill.setAdditionalDetails(jsonMerge(bill.getAdditionalDetails(),
+//                        workflowRequestByPaymentId.get(payment.getId()).getAdditionalDetails()));
             });
             updateAuditDetails(payment, requestInfo);
         }
@@ -210,8 +210,8 @@ public class PaymentWorkflowService {
                 Bill bill = paymentDetail.getBill();
                 bill.setStatus(Bill.StatusEnum.CANCELLED);
                 bill.setReasonForCancellation(workflowRequestByPaymentId.get(payment.getId()).getReason());
-                bill.setAdditionalDetails(jsonMerge(bill.getAdditionalDetails(),
-                        workflowRequestByPaymentId.get(payment.getId()).getAdditionalDetails()));
+//                bill.setAdditionalDetails(jsonMerge(bill.getAdditionalDetails(),
+//                        workflowRequestByPaymentId.get(payment.getId()).getAdditionalDetails()));
             });
 
             updateAuditDetails(payment, requestInfo);
@@ -258,8 +258,8 @@ public class PaymentWorkflowService {
                     .getAdditionalDetails();
 
 			payment.getPaymentDetails().forEach(paymentDetail -> {
-				paymentDetail.getBill().setAdditionalDetails(
-						jsonMerge(paymentDetail.getBill().getAdditionalDetails(), additionalDetails));
+//				paymentDetail.getBill().setAdditionalDetails(
+//						jsonMerge(paymentDetail.getBill().getAdditionalDetails(), additionalDetails));
 			});
 
 

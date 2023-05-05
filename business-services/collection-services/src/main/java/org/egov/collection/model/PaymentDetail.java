@@ -68,8 +68,8 @@ public class PaymentDetail {
     @JsonProperty("bill")
     private Bill bill;
 
-    @JsonProperty("additionalDetails")
-    private JsonNode additionalDetails;
+//    @JsonProperty("additionalDetails")
+//    private JsonNode additionalDetails;
 
     @JsonProperty("auditDetails")
     private AuditDetails auditDetails;

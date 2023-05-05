@@ -261,8 +261,8 @@ public class PaymentValidator {
 
                 Map<String,PaymentDetail> billIdToPaymentDetailDB = paymentFromDb.getPaymentDetails().stream().collect(Collectors.toMap(PaymentDetail::getBillId,Function.identity()));
 
-                paymentFromDb.setAdditionalDetails(jsonMerge(paymentFromDb.getAdditionalDetails(),
-                        payment.getAdditionalDetails()));
+//                paymentFromDb.setAdditionalDetails(jsonMerge(paymentFromDb.getAdditionalDetails(),
+//                        payment.getAdditionalDetails()));
 
                 if (paymentFromDb.getPaymentMode().toString().equalsIgnoreCase(InstrumentTypesEnum.CHEQUE.toString())
                         || paymentFromDb.getPaymentMode().toString().equalsIgnoreCase(InstrumentTypesEnum.DD.toString())){
@@ -300,8 +300,8 @@ public class PaymentValidator {
                     if (!StringUtils.isEmpty(billDetail.getVoucherHeader()))
                         billDetailFromDb.setVoucherHeader(billDetail.getVoucherHeader());
 
-                    billDetailFromDb.setAdditionalDetails(
-                            jsonMerge(billDetailFromDb.getAdditionalDetails(), billDetail.getAdditionalDetails()));
+//                    billDetailFromDb.setAdditionalDetails(
+//                            jsonMerge(billDetailFromDb.getAdditionalDetails(), billDetail.getAdditionalDetails()));
 
 
 
@@ -498,20 +498,20 @@ public class PaymentValidator {
 
 			String response = serviceRequestRepository
 					.fetchGetResult(applicationProperties.getRazorPayUrl() + paymentRequest.getPayment().getIfscCode());
-			ObjectNode objectNode = (ObjectNode) paymentRequest.getPayment().getAdditionalDetails();
-			if (objectNode == null) {
-				ObjectMapper mapper = new ObjectMapper();
-				objectNode = mapper.createObjectNode();
-				
-					try {
-						razorPayIfscSearchResponse = mapper.readTree(response);
-					} catch (JsonProcessingException e) {
-						throw new CustomException("INVALID_PROCESS_EXCEPTION", e.getMessage());
-
-				} 
-				objectNode.set("bankDetails", razorPayIfscSearchResponse);
-				paymentRequest.getPayment().setAdditionalDetails(objectNode);
-			}
+//			ObjectNode objectNode = (ObjectNode) paymentRequest.getPayment().getAdditionalDetails();
+//			if (objectNode == null) {
+//				ObjectMapper mapper = new ObjectMapper();
+//				objectNode = mapper.createObjectNode();
+//
+//					try {
+//						razorPayIfscSearchResponse = mapper.readTree(response);
+//					} catch (JsonProcessingException e) {
+//						throw new CustomException("INVALID_PROCESS_EXCEPTION", e.getMessage());
+//
+//				}
+//				objectNode.set("bankDetails", razorPayIfscSearchResponse);
+//				paymentRequest.getPayment().setAdditionalDetails(objectNode);
+//			}
 
 		}
 

@@ -106,8 +106,8 @@ public class BillDetail {
 	@JsonProperty("toPeriod")
 	private Long toPeriod = null;
 
-	@JsonProperty("additionalDetails")
-	private JsonNode additionalDetails = null;
+//	@JsonProperty("additionalDetails")
+//	private JsonNode additionalDetails = null;
 
 	@SafeHtml
 	@JsonProperty("channel")

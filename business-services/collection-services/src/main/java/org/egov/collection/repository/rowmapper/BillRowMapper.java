@@ -67,7 +67,7 @@ public class BillRowMapper implements ResultSetExtractor<List<Bill>> {
 				}
 
 				PGobject obj = (PGobject) rs.getObject("b_additionalDetails");
-				bill.setAdditionalDetails(getJsonValue(obj));
+//				bill.setAdditionalDetails(getJsonValue(obj));
 
 				billMap.put(bill.getId(), bill);
 				billDetailMap.clear();
@@ -85,7 +85,7 @@ public class BillRowMapper implements ResultSetExtractor<List<Bill>> {
 						.expiryDate(rs.getLong("bd_expirydate")).build();
 				
 				PGobject obj = (PGobject) rs.getObject("bd_additionalDetails");
-				billDetail.setAdditionalDetails(getJsonValue(obj));
+//				billDetail.setAdditionalDetails(getJsonValue(obj));
 
 				billDetailMap.put(billDetail.getId(), billDetail);
 
@@ -102,7 +102,7 @@ public class BillRowMapper implements ResultSetExtractor<List<Bill>> {
 					.demandDetailId(rs.getString("ad_demanddetailid")).build();
 			
 			PGobject obj = (PGobject) rs.getObject("ad_additionalDetails");
-			billAccDetail.setAdditionalDetails(getJsonValue(obj));
+//			billAccDetail.setAdditionalDetails(getJsonValue(obj));
 
 			if (billDetail.getId().equals(billAccDetail.getBillDetailId()))
 				billDetail.addBillAccountDetail(billAccDetail);

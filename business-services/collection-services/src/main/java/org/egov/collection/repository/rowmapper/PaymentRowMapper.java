@@ -109,7 +109,7 @@ public class PaymentRowMapper implements ResultSetExtractor<List<Payment>> {
 
 
                 PGobject obj = (PGobject) rs.getObject("py_additionalDetails");
-                currentPayment.setAdditionalDetails(getJsonValue(obj));
+//                currentPayment.setAdditionalDetails(getJsonValue(obj));
                 idToPaymentMap.put(currentPayment.getId(),currentPayment);
             }
 
@@ -172,7 +172,7 @@ public class PaymentRowMapper implements ResultSetExtractor<List<Payment>> {
                     .manualReceiptDate(manualReceiptDate)
                     .manualReceiptNumber(manualReceiptNo)
                     .receiptType(receiptType)
-                    .additionalDetails(getJsonValue(obj))
+//                    .additionalDetails(getJsonValue(obj))
 
                     .auditDetails(auditDetails)
                     .build();

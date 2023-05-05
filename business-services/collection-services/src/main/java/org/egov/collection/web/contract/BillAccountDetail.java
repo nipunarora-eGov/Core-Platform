@@ -65,8 +65,8 @@ public class BillAccountDetail {
 	@JsonProperty("taxHeadCode")
 	private String taxHeadCode = null;
 
-	@JsonProperty("additionalDetails")
-	private JsonNode additionalDetails = null;
+//	@JsonProperty("additionalDetails")
+//	private JsonNode additionalDetails = null;
 
 	@JsonProperty("purpose")
 	private Purpose purpose = null;
