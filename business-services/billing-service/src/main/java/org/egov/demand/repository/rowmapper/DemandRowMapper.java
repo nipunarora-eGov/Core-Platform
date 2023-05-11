@@ -112,26 +112,6 @@ public class DemandRowMapper implements ResultSetExtractor<List<Demand>> {
 				demand.setDemandDetails(new ArrayList<>());
 				demandMap.put(demand.getId(), demand);
 			}
-
-			DemandDetail demandDetail = new DemandDetail();
-			demandDetail.setId(rs.getString("dlid"));
-			demandDetail.setDemandId(rs.getString("dldemandid"));
-
-			demandDetail.setTaxHeadMasterCode(rs.getString("dltaxheadcode"));
-			;
-			demandDetail.setTenantId(rs.getString("dltenantid"));
-			demandDetail.setTaxAmount(rs.getBigDecimal("dltaxamount"));
-			demandDetail.setCollectionAmount(rs.getBigDecimal("dlcollectionamount"));
-
-			AuditDetails dlauditDetail = new AuditDetails();
-			dlauditDetail.setCreatedBy(rs.getString("dlcreatedby"));
-			dlauditDetail.setCreatedTime(rs.getLong("dlcreatedtime"));
-			dlauditDetail.setLastModifiedBy(rs.getString("dllastModifiedby"));
-			dlauditDetail.setLastModifiedTime(rs.getLong("dllastModifiedtime"));
-			demandDetail.setAuditDetails(dlauditDetail);
-
-			if (demand.getId().equals(demandDetail.getDemandId()))
-				demand.getDemandDetails().add(demandDetail);
 		}
 		return new ArrayList<>(demandMap.values());
 	}

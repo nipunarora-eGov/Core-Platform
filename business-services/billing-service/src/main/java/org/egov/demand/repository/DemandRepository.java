@@ -41,12 +41,7 @@ package org.egov.demand.repository;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.egov.common.exception.InvalidTenantIdException;
@@ -57,6 +52,7 @@ import org.egov.demand.model.DemandCriteria;
 import org.egov.demand.model.DemandDetail;
 import org.egov.demand.model.PaymentBackUpdateAudit;
 import org.egov.demand.repository.querybuilder.DemandQueryBuilder;
+import org.egov.demand.repository.rowmapper.DemandDetailsRowMapper;
 import org.egov.demand.repository.rowmapper.DemandRowMapper;
 import org.egov.demand.util.Util;
 import org.egov.demand.web.contract.DemandRequest;
@@ -70,6 +66,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 
 @Repository
 @Slf4j
@@ -83,6 +80,9 @@ public class DemandRepository {
 	
 	@Autowired
 	private DemandRowMapper demandRowMapper;
+
+	@Autowired
+	private DemandDetailsRowMapper demandDetailsRowMapper;
 	
 	@Autowired
 	private MultiStateInstanceUtil centralInstanceUtil;
@@ -101,7 +101,45 @@ public class DemandRepository {
 					"TenantId length is not sufficient to replace query schema in a multi state instance");
 		}
 		
-		return jdbcTemplate.query(searchDemandQuery, preparedStatementValues.toArray(), demandRowMapper);
+		List<Demand> demands = jdbcTemplate.query(searchDemandQuery, preparedStatementValues.toArray(), demandRowMapper);
+
+//		if(CollectionUtils.isEmpty(demands))
+//			return new ArrayList<>();
+
+		List<String> demandIds = new ArrayList<>();
+		demands.forEach(demand -> {
+			demandIds.add(demand.getId());
+		});
+
+		demandCriteria.setDemandId(new HashSet<>(demandIds));
+
+		// Search demandDetails separately
+		preparedStatementValues.clear();
+		String demandDetailsQuery = demandQueryBuilder.getDemandDetailsQuery(demandCriteria, preparedStatementValues);
+		try {
+			demandDetailsQuery = centralInstanceUtil.replaceSchemaPlaceholder(demandDetailsQuery, demandCriteria.getTenantId());
+		} catch (InvalidTenantIdException e) {
+			throw new CustomException("EG_BS_TENANTID_ERROR",
+					"TenantId length is not sufficient to replace query schema in a multi state instance");
+		}
+		List<DemandDetail> demandDetailsList = jdbcTemplate.query(demandDetailsQuery, preparedStatementValues.toArray(), demandDetailsRowMapper);
+
+		Map<String, List<DemandDetail>> demandIdVsDemandDetailMap = new HashMap<>();
+
+		demandDetailsList.forEach(demandDetail -> {
+			if(demandIdVsDemandDetailMap.containsKey(demandDetail.getDemandId())){
+				demandIdVsDemandDetailMap.get(demandDetail.getDemandId()).add(demandDetail);
+			}else{
+				demandIdVsDemandDetailMap.put(demandDetail.getDemandId(), Collections.singletonList(demandDetail));
+			}
+		});
+
+		demands.forEach(demand -> {
+			demand.setDemandDetails(demandIdVsDemandDetailMap.get(demand.getId()));
+		});
+
+		return demands;
+
 	}
 	
 	/**

@@ -73,23 +73,17 @@ public class DemandQueryBuilder {
 			+ "dmd.minimumamountpayable AS dminimumamountpayable,dmd.createdby AS dcreatedby,"
 			+ "dmd.lastmodifiedby AS dlastmodifiedby,dmd.createdtime AS dcreatedtime,"
 			+ "dmd.lastmodifiedtime AS dlastmodifiedtime,dmd.tenantid AS dtenantid,dmd.status,"
-			+ "dmd.additionaldetails as demandadditionaldetails,dmd.ispaymentcompleted as ispaymentcompleted,"
-
-			+ "dmdl.id AS dlid,dmdl.demandid AS dldemandid,dmdl.taxheadcode AS dltaxheadcode,"
-			+ "dmdl.taxamount AS dltaxamount,dmdl.collectionamount AS dlcollectionamount,"
-			+ "dmdl.createdby AS dlcreatedby,dmdl.lastModifiedby AS dllastModifiedby,"
-			+ "dmdl.createdtime AS dlcreatedtime,dmdl.lastModifiedtime AS dllastModifiedtime,"
-			+ "dmdl.tenantid AS dltenantid,dmdl.additionaldetails as detailadditionaldetails " + "FROM {schema}.egbs_demand_v1 dmd "
-			+ "INNER JOIN {schema}.egbs_demanddetail_v1 dmdl ON dmd.id=dmdl.demandid " + "AND dmd.tenantid=dmdl.tenantid WHERE ";
+			+ "dmd.additionaldetails as demandadditionaldetails,dmd.ispaymentcompleted as ispaymentcompleted "
+			+ "FROM {schema}.egbs_demand_v1 dmd "
+			+ " WHERE ";
 
 	public static final String BASE_DEMAND_DETAIL_QUERY = "SELECT "
 			+ "demanddetail.id AS dlid,demanddetail.demandid AS dldemandid,demanddetail.taxheadcode AS dltaxheadcode,"
 			+ "demanddetail.taxamount AS dltaxamount,demanddetail.collectionamount AS dlcollectionamount,"
 			+ "demanddetail.createdby AS dlcreatedby,demanddetail.lastModifiedby AS dllastModifiedby,"
 			+ "demanddetail.createdtime AS dlcreatedtime,demanddetail.lastModifiedtime AS dllastModifiedtime,"
-			+ "demanddetail.tenantid AS dltenantid " + " FROM {schema}.egbs_demanddetail_v1 demanddetail "
-					+ "INNER JOIN {schema}.egbs_demand demand ON demanddetail.demandid=demand.id AND "
-					+ "demanddetail.tenantid=demand.tenantid WHERE ";
+			+ "demanddetail.tenantid AS dltenantid, demanddetail.additionaldetails as dladditionaldetails " + " FROM {schema}.egbs_demanddetail_v1 demanddetail "
+			+ " WHERE ";
 
 	public static final String DEMAND_QUERY_ORDER_BY_CLAUSE = "dmd.taxperiodfrom";
 
@@ -221,21 +215,37 @@ public class DemandQueryBuilder {
 		}
 
 		addOrderByClause(demandQuery, DEMAND_QUERY_ORDER_BY_CLAUSE);
-		addPagingClause(demandQuery, preparedStatementValues);
+		addPagingClause(demandQuery, demandCriteria, preparedStatementValues);
 
 		log.info("the query String for demand : " + demandQuery.toString());
 		return demandQuery.toString();
 	}
-	
+
+	public String getDemandDetailsQuery(DemandCriteria demandCriteria, List<Object> preparedStatementValues) {
+
+		StringBuilder demandDetailsQuery = new StringBuilder(BASE_DEMAND_DETAIL_QUERY);
+
+		if (demandCriteria.getDemandId() != null && !demandCriteria.getDemandId().isEmpty()) {
+			demandDetailsQuery.append("demanddetail.demandid IN (" + getIdQueryForStrings(demandCriteria.getDemandId()) + ")");
+			addToPreparedStatement(preparedStatementValues, demandCriteria.getDemandId());
+		}
+
+
+		log.info("the query String for demand : " + demandDetailsQuery.toString());
+		return demandDetailsQuery.toString();
+	}
+
+
 	private static void addOrderByClause(StringBuilder demandQueryBuilder,String columnName) {
 		demandQueryBuilder.append(" ORDER BY " + columnName);
 	}
 
-	private static void addPagingClause(StringBuilder demandQueryBuilder, List<Object> preparedStatementValues) {
-//		demandQueryBuilder.append(" LIMIT ?");
-//		preparedStatementValues.add(500);
-//		demandQueryBuilder.append(" OFFSET ?");
-//		preparedStatementValues.add(0);
+	private static void addPagingClause(StringBuilder demandQueryBuilder, DemandCriteria criteria, List<Object> preparedStatementValues) {
+		demandQueryBuilder.append(" OFFSET ?");
+		preparedStatementValues.add(criteria.getOffset());
+
+		demandQueryBuilder.append(" LIMIT ?");
+		preparedStatementValues.add(criteria.getLimit());
 	}
 
 	private static boolean addAndClause(StringBuilder queryString) {
