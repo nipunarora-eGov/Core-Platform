@@ -127,11 +127,12 @@ public class DemandRepository {
 		Map<String, List<DemandDetail>> demandIdVsDemandDetailMap = new HashMap<>();
 
 		demandDetailsList.forEach(demandDetail -> {
-			if(demandIdVsDemandDetailMap.containsKey(demandDetail.getDemandId())){
-				demandIdVsDemandDetailMap.get(demandDetail.getDemandId()).add(demandDetail);
-			}else{
-				demandIdVsDemandDetailMap.put(demandDetail.getDemandId(), Collections.singletonList(demandDetail));
+
+			if(!demandIdVsDemandDetailMap.containsKey(demandDetail.getDemandId())){
+				demandIdVsDemandDetailMap.put(demandDetail.getDemandId(), new ArrayList<>());
 			}
+			demandIdVsDemandDetailMap.get(demandDetail.getDemandId()).add(demandDetail);
+
 		});
 
 		demands.forEach(demand -> {
