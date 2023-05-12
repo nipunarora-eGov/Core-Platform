@@ -94,7 +94,7 @@ public class BusinessServiceRepository {
      * Creates map of roles vs tenantId vs List of status uuids from all the avialable businessServices
      * @return
      */
-    @Cacheable(value = "roleTenantAndStatusesMapping")
+    @Cacheable(value = "roleTenantAndStatusesMapping", key = "#tenantIdForState")
     public Map<String,Map<String,List<String>>> getRoleTenantAndStatusMapping(String tenantIdForState){
 
 
