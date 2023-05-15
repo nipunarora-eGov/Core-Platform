@@ -46,12 +46,14 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.egov.common.utils.MultiStateInstanceUtil;
+import org.egov.demand.config.ApplicationProperties;
 import org.egov.demand.model.DemandCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.ObjectUtils;
 
 @Slf4j
 @Component
@@ -59,6 +61,9 @@ public class DemandQueryBuilder {
 	
 	@Autowired
 	private MultiStateInstanceUtil centralInstaceUtil;
+
+	@Autowired
+	private ApplicationProperties applicationProperties;
 	
 
 	public static final String PAYMENT_BACKUPDATE_AUDIT_INSERT_QUERY = "INSERT INTO {schema}.egbs_payment_backupdate_audit (paymentid, isbackupdatesuccess, isreceiptcancellation, errorMessage)"
@@ -195,12 +200,27 @@ public class DemandQueryBuilder {
 //		preparedStatementValues.add(0);
 	}
 
-	private static void addPagingClause(StringBuilder demandQueryBuilder, DemandCriteria criteria, List<Object> preparedStatementValues) {
-		demandQueryBuilder.append(" OFFSET ?");
-		preparedStatementValues.add(criteria.getOffset());
+	private void addPagingClause(StringBuilder demandQueryBuilder, DemandCriteria criteria, List<Object> preparedStatementValues) {
 
+		// Add clause for offset
+		demandQueryBuilder.append(" OFFSET ?");
+		if(ObjectUtils.isEmpty(criteria.getOffset())) {
+			preparedStatementValues.add(applicationProperties.getDefaultOffset());
+		} else{
+			preparedStatementValues.add(criteria.getOffset());
+		}
+
+		// Add clause for limit
 		demandQueryBuilder.append(" LIMIT ?");
-		preparedStatementValues.add(criteria.getLimit());
+		if(ObjectUtils.isEmpty(criteria.getLimit())){
+			preparedStatementValues.add(applicationProperties.getDefaultLimit());
+		}else {
+			if (criteria.getLimit() > applicationProperties.getMaxLimit()) {
+				preparedStatementValues.add(applicationProperties.getMaxLimit());
+			} else {
+				preparedStatementValues.add(criteria.getLimit());
+			}
+		}
 	}
 
 	private static boolean addAndClause(StringBuilder queryString) {
