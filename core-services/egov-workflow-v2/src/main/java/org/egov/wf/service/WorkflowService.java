@@ -224,8 +224,8 @@ public class WorkflowService {
         List<String> actionableStatuses = util.getActionableStatusesForRole(requestInfo,businessServices,criteria);
         criteria.setAssignee(requestInfo.getUserInfo().getUuid());
         criteria.setStatus(actionableStatuses);*/
-
-        util.enrichStatusesInSearchCriteria(requestInfo, criteria);
+    	Map<String, Map<String,List<String>>> roleTenantAndStatusMapping = businessServiceRepository.getRoleTenantAndStatusMapping(criteria.getTenantId());
+        util.enrichStatusesInSearchCriteria(requestInfo, criteria, roleTenantAndStatusMapping);
         criteria.setAssignee(requestInfo.getUserInfo().getUuid());
 
 
