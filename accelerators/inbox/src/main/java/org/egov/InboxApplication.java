@@ -17,7 +17,6 @@ import org.springframework.context.annotation.Profile;
 import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
-@EnableAutoConfiguration
 @EnableCaching
 @Import({ TracerConfiguration.class, MultiStateInstanceUtil.class, EncryptionConfiguration.class   })
 public class InboxApplication {

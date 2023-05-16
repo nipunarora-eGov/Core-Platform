@@ -27,6 +27,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.egov.inbox.util.InboxConstants.*;
 
@@ -145,17 +146,19 @@ public class InboxServiceV2 {
         HashMap<String, String> StatusIdNameMap = workflowService.getActionableStatusesForRole(inboxRequest.getRequestInfo(), businessServices,
                 inboxRequest.getInbox().getProcessSearchCriteria());
         log.info(StatusIdNameMap.toString());
-        List<String> actionableStatusUuid = new ArrayList<>();
+        List<String> actionableStatusNames = new ArrayList<>();
         if (StatusIdNameMap.values().size() > 0) {
             if (!CollectionUtils.isEmpty(processCriteria.getStatus())) {
-                processCriteria.getStatus().forEach(statusUuid -> {
-                    if(StatusIdNameMap.keySet().contains(statusUuid)){
-                        actionableStatusUuid.add(statusUuid);
+                processCriteria.getStatus().forEach(statusName -> {
+                    if(StatusIdNameMap.containsValue(statusName)){
+                        actionableStatusNames.add(statusName);
                     }
                 });
-                inboxRequest.getInbox().getProcessSearchCriteria().setStatus(actionableStatusUuid);
+                inboxRequest.getInbox().getProcessSearchCriteria().setStatus(actionableStatusNames);
             } else {
-                inboxRequest.getInbox().getProcessSearchCriteria().setStatus(new ArrayList<>(StatusIdNameMap.keySet()));
+                inboxRequest.getInbox().getProcessSearchCriteria().setStatus(StatusIdNameMap.values()
+                        .stream()
+                        .filter(Objects::nonNull).collect(Collectors.toList()));
             }
         }else{
             inboxRequest.getInbox().getProcessSearchCriteria().setStatus(new ArrayList<>());
