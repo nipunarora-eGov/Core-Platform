@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.egov.common.utils.MultiStateInstanceUtil;
 import org.egov.wf.config.WorkflowConfig;
 import org.egov.wf.repository.querybuilder.BusinessServiceQueryBuilder;
 import org.egov.wf.repository.rowmapper.BusinessServiceRowMapper;
@@ -41,6 +42,9 @@ public class BusinessServiceRepositoryV1 {
     
     @Autowired
     private WorkflowUtil workflowUtil;
+    
+    @Autowired
+    private MultiStateInstanceUtil multiStateInstanceUtil;
 
 
     @Autowired
@@ -79,10 +83,12 @@ public class BusinessServiceRepositoryV1 {
         List<BusinessService> searchResults = new LinkedList<>();
 
         if(!CollectionUtils.isEmpty(stateLevelBusinessServices)){
+        	
             BusinessServiceSearchCriteria stateLevelCriteria = new BusinessServiceSearchCriteria();
-            stateLevelCriteria.setTenantId(criteria.getTenantId().split("\\.")[0]);
+            stateLevelCriteria.setTenantId(multiStateInstanceUtil.getStateLevelTenant(criteria.getTenantId()));
             stateLevelCriteria.setBusinessServices(stateLevelBusinessServices);
             List<Object> stateLevelPreparedStmtList = new ArrayList<>();
+            
             query = queryBuilder.getBusinessServices(stateLevelCriteria, stateLevelPreparedStmtList);
             query = workflowUtil.replaceSchemaPlaceholder(query, criteria.getTenantId());
             searchResults.addAll(jdbcTemplate.query(query, stateLevelPreparedStmtList.toArray(), rowMapper));
