@@ -84,7 +84,7 @@ public class BusinessServiceRepositoryV1 {
             stateLevelCriteria.setBusinessServices(stateLevelBusinessServices);
             List<Object> stateLevelPreparedStmtList = new ArrayList<>();
             query = queryBuilder.getBusinessServices(stateLevelCriteria, stateLevelPreparedStmtList);
-            workflowUtil.replaceSchemaPlaceholder(query, criteria.getTenantId());
+            query = workflowUtil.replaceSchemaPlaceholder(query, criteria.getTenantId());
             searchResults.addAll(jdbcTemplate.query(query, stateLevelPreparedStmtList.toArray(), rowMapper));
         }
         if(!CollectionUtils.isEmpty(tenantBusinessServices)){
@@ -93,7 +93,7 @@ public class BusinessServiceRepositoryV1 {
             tenantLevelCriteria.setBusinessServices(tenantBusinessServices);
             List<Object> tenantLevelPreparedStmtList = new ArrayList<>();
             query = queryBuilder.getBusinessServices(tenantLevelCriteria, tenantLevelPreparedStmtList);
-            workflowUtil.replaceSchemaPlaceholder(query, criteria.getTenantId());
+            query = workflowUtil.replaceSchemaPlaceholder(query, criteria.getTenantId());
             searchResults.addAll(jdbcTemplate.query(query, tenantLevelPreparedStmtList.toArray(), rowMapper));
         }
 
