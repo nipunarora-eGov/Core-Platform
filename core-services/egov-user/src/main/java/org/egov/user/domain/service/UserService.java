@@ -99,6 +99,9 @@ public class UserService {
     @Value("${egov.user.pwd.pattern.max.length}")
     private Integer pwdMaxLength;
 
+    @Value("${egov.user.mobile.pattern}")
+    private String mobileNumberRegex;
+
     @Autowired
     private RestTemplate restTemplate;
 
@@ -112,7 +115,8 @@ public class UserService {
                        @Value("${employee.login.password.otp.enabled}") boolean isEmployeeLoginOtpBased,
                        @Value("${egov.user.pwd.pattern}") String pwdRegex,
                        @Value("${egov.user.pwd.pattern.max.length}") Integer pwdMaxLength,
-                       @Value("${egov.user.pwd.pattern.min.length}") Integer pwdMinLength) {
+                       @Value("${egov.user.pwd.pattern.min.length}") Integer pwdMinLength,
+                       @Value("${egov.user.mobile.pattern}") String mobileNumberRegex) {
         this.userRepository = userRepository;
         this.otpRepository = otpRepository;
         this.passwordEncoder = passwordEncoder;
@@ -126,6 +130,7 @@ public class UserService {
         this.pwdMaxLength = pwdMaxLength;
         this.pwdMinLength = pwdMinLength;
         this.userUtils = userUtils;
+        this.mobileNumberRegex = mobileNumberRegex;
 
     }
 
@@ -228,6 +233,10 @@ public class UserService {
         user.setUuid(UUID.randomUUID().toString());
         user.validateNewUser(createUserValidateName);
         conditionallyValidateOtp(user);
+        validateMobileNumber(user.getMobileNumber());
+        if (user.getAlternateMobileNumber() != null) {
+            validateMobileNumber(user.getAlternateMobileNumber());
+        }
         /* encrypt here */
         user = encryptionDecryptionUtil.encryptObject(user, "User", User.class);
         validateUserUniqueness(user);
@@ -363,6 +372,12 @@ public class UserService {
         user.validateUserModification();
         validatePassword(user.getPassword());
         user.setPassword(encryptPwd(user.getPassword()));
+        if (user.getMobileNumber() != null) {
+            validateMobileNumber(user.getMobileNumber());
+        }
+        if (user.getAlternateMobileNumber() != null) {
+            validateMobileNumber(user.getAlternateMobileNumber());
+        }
         /* encrypt */
         user = encryptionDecryptionUtil.encryptObject(user, "User", User.class);
         userRepository.update(user, existingUser,requestInfo.getUserInfo().getId(), requestInfo.getUserInfo().getUuid() );
@@ -414,6 +429,13 @@ public class UserService {
      * @return
      */
     public User partialUpdate(User user, RequestInfo requestInfo) {
+        if (user.getMobileNumber() != null) {
+            validateMobileNumber(user.getMobileNumber());
+        }
+        if (user.getAlternateMobileNumber() != null) {
+            validateMobileNumber(user.getAlternateMobileNumber());
+        }
+
         /* encrypt here */
         user = encryptionDecryptionUtil.encryptObject(user, "User", User.class);
 
@@ -659,6 +681,23 @@ public class UserService {
                 errorMap.put("INVALID_PWD_PATTERN", "Password MUST HAVE: Atleast one digit, one upper case, one lower case, one special character (@#$%) and MUST NOT contain any spaces");
             }
         }
+        if (!CollectionUtils.isEmpty(errorMap.keySet())) {
+            throw new CustomException(errorMap);
+        }
+    }
+
+    public void validateMobileNumber(String mobileNumber) {
+        Map<String, String> errorMap = new HashMap<>();
+        if (mobileNumber != null) {
+            Pattern p = Pattern.compile(mobileNumberRegex);
+            Matcher m = p.matcher(mobileNumber);
+            if (!m.matches()) {
+                errorMap.put("INVALID_MOBILE_NUMBER_PATTERN", "Mobile number pattern is not valid");
+            }
+        } else {
+            errorMap.put("INVALID_MOBILE_NUMBER", "Mobile number cannot be null");
+        }
+
         if (!CollectionUtils.isEmpty(errorMap.keySet())) {
             throw new CustomException(errorMap);
         }
