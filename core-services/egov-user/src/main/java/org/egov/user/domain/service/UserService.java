@@ -234,9 +234,7 @@ public class UserService {
         user.validateNewUser(createUserValidateName);
         conditionallyValidateOtp(user);
         validateMobileNumber(user.getMobileNumber());
-        if (user.getAlternateMobileNumber() != null) {
-            validateMobileNumber(user.getAlternateMobileNumber());
-        }
+        validateMobileNumber(user.getAlternateMobileNumber());
         /* encrypt here */
         user = encryptionDecryptionUtil.encryptObject(user, "User", User.class);
         validateUserUniqueness(user);
@@ -372,12 +370,8 @@ public class UserService {
         user.validateUserModification();
         validatePassword(user.getPassword());
         user.setPassword(encryptPwd(user.getPassword()));
-        if (user.getMobileNumber() != null) {
-            validateMobileNumber(user.getMobileNumber());
-        }
-        if (user.getAlternateMobileNumber() != null) {
-            validateMobileNumber(user.getAlternateMobileNumber());
-        }
+        validateMobileNumber(user.getMobileNumber());
+        validateMobileNumber(user.getAlternateMobileNumber());
         /* encrypt */
         user = encryptionDecryptionUtil.encryptObject(user, "User", User.class);
         userRepository.update(user, existingUser,requestInfo.getUserInfo().getId(), requestInfo.getUserInfo().getUuid() );
@@ -429,12 +423,8 @@ public class UserService {
      * @return
      */
     public User partialUpdate(User user, RequestInfo requestInfo) {
-        if (user.getMobileNumber() != null) {
-            validateMobileNumber(user.getMobileNumber());
-        }
-        if (user.getAlternateMobileNumber() != null) {
-            validateMobileNumber(user.getAlternateMobileNumber());
-        }
+        validateMobileNumber(user.getMobileNumber());
+        validateMobileNumber(user.getAlternateMobileNumber());
 
         /* encrypt here */
         user = encryptionDecryptionUtil.encryptObject(user, "User", User.class);
@@ -694,10 +684,7 @@ public class UserService {
             if (!m.matches()) {
                 errorMap.put("INVALID_MOBILE_NUMBER_PATTERN", "Mobile number pattern is not valid");
             }
-        } else {
-            errorMap.put("INVALID_MOBILE_NUMBER", "Mobile number cannot be null");
         }
-
         if (!CollectionUtils.isEmpty(errorMap.keySet())) {
             throw new CustomException(errorMap);
         }
