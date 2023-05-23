@@ -274,7 +274,7 @@ public class InboxServiceV2 {
                 Long serviceSla = getApplicationServiceSla(businessServiceSlaMap, stateUuidVsSlaMap, inbox.getBusinessObject());
                 inbox.getBusinessObject().put(SERVICESLA_KEY, serviceSla);
             } catch (Exception exception) {
-                log.error("Exception occurred in SLA calculation", exception);
+                log.warn("Exception occurred in SLA calculation", exception);
             }
             inboxItemList.add(inbox);
         });
