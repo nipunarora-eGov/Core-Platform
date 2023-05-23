@@ -136,7 +136,6 @@ public class UserServiceTest {
     @Test
     public void test_should_set_pre_defined_expiry_on_creating_user() {
         org.egov.user.domain.model.User domainUser = mock(User.class);
-        when(domainUser.getMobileNumber()).thenReturn("1234567890");
         when(otpRepository.isOtpValidationComplete(getExpectedRequest())).thenReturn(true);
         final User expectedEntityUser = User.builder().build();
         when(userRepository.create(domainUser)).thenReturn(expectedEntityUser);
@@ -154,7 +153,6 @@ public class UserServiceTest {
         final User expectedUser = User.builder().build();
         when(domainUser.getTenantId()).thenReturn("default");
         when(domainUser.getPassword()).thenReturn("P@assw0rd");
-        when(domainUser.getMobileNumber()).thenReturn("1234567890");
         when(userRepository.create(domainUser)).thenReturn(expectedUser);
         when(encryptionDecryptionUtil.encryptObject(domainUser, "User", User.class)).thenReturn(domainUser);
         when(encryptionDecryptionUtil.decryptObject(expectedUser, "UserSelf", User.class, getValidRequestInfo())).thenReturn(expectedUser);
@@ -204,7 +202,6 @@ public class UserServiceTest {
         org.egov.user.domain.model.User domainUser = mock(User.class);
         when(domainUser.getTenantId()).thenReturn("default");
         when(domainUser.getPassword()).thenReturn("P@assw0rd");
-        when(domainUser.getMobileNumber()).thenReturn("1234567890");
         when((domainUser.getOtpValidationRequest())).thenReturn(getExpectedRequest());
         when(otpRepository.isOtpValidationComplete(getExpectedRequest())).thenReturn(true);
         final User expectedUser = User.builder().build();
@@ -222,7 +219,6 @@ public class UserServiceTest {
         org.egov.user.domain.model.User domainUser = mock(User.class);
         when(domainUser.getTenantId()).thenReturn("default");
         when(domainUser.getPassword()).thenReturn("P@assw0rd");
-        when(domainUser.getMobileNumber()).thenReturn("1234567890");
         when(domainUser.getOtpValidationRequest()).thenReturn(getExpectedRequest());
         when(otpRepository.isOtpValidationComplete(getExpectedRequest())).thenReturn(true);
         final User expectedEntityUser = User.builder().build();
