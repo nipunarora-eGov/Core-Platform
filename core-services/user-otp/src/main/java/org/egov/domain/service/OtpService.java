@@ -53,7 +53,7 @@ public class OtpService {
 
         final String otpNumber = otpRepository.fetchOtp(otpRequest);
         otpSMSSender.send(otpRequest, otpNumber);
-        log.debug("The OTP for registration is: " + otpNumber);
+        log.info("The OTP for registration is: " + otpNumber);
         if(!otpRequest.isRegistrationRequestType()) // Because new user doesn't have any email configured
             try{
                 otpEmailRepository.send(matchingUser.getEmail(), otpNumber, otpRequest);
