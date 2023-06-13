@@ -150,12 +150,12 @@ public class InboxServiceV2 {
             if (!CollectionUtils.isEmpty(processCriteria.getStatus())) {
                 processCriteria.getStatus().forEach(statusUuid -> {
                     if(StatusIdNameMap.keySet().contains(statusUuid)){
-                        actionableStatusUuid.add(statusUuid);
+                        actionableStatusUuid.add(StatusIdNameMap.get(statusUuid));
                     }
                 });
                 inboxRequest.getInbox().getProcessSearchCriteria().setStatus(actionableStatusUuid);
             } else {
-                inboxRequest.getInbox().getProcessSearchCriteria().setStatus(new ArrayList<>(StatusIdNameMap.keySet()));
+                inboxRequest.getInbox().getProcessSearchCriteria().setStatus(new ArrayList<>(StatusIdNameMap.values()));
             }
         }else{
             inboxRequest.getInbox().getProcessSearchCriteria().setStatus(new ArrayList<>());
