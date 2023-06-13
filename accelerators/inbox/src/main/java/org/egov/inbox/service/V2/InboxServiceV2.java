@@ -27,6 +27,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.egov.inbox.util.InboxConstants.*;
 
@@ -142,20 +143,22 @@ public class InboxServiceV2 {
         String tenantId = inboxRequest.getInbox().getTenantId();
         processCriteria.setTenantId(tenantId);
 
-        HashMap<String, String> StatusIdNameMap = workflowService.getActionableStatusesForRole(inboxRequest.getRequestInfo(), businessServices,
+        Map<String, String> StatusIdNameMap = workflowService.getActionableStatusesForRole(inboxRequest.getRequestInfo(), businessServices,
                 inboxRequest.getInbox().getProcessSearchCriteria());
-        log.info(StatusIdNameMap.toString());
+        Map<String, String> statusIdNameMap = StatusIdNameMap.entrySet().stream().filter(entry -> entry.getValue() != null)
+                .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+        log.info(statusIdNameMap.toString());
         List<String> actionableStatusUuid = new ArrayList<>();
-        if (StatusIdNameMap.values().size() > 0) {
+        if (statusIdNameMap.values().size() > 0) {
             if (!CollectionUtils.isEmpty(processCriteria.getStatus())) {
                 processCriteria.getStatus().forEach(statusUuid -> {
-                    if(StatusIdNameMap.keySet().contains(statusUuid)){
-                        actionableStatusUuid.add(StatusIdNameMap.get(statusUuid));
+                    if(statusIdNameMap.keySet().contains(statusUuid) && statusIdNameMap.get(statusUuid) != null){
+                        actionableStatusUuid.add(statusIdNameMap.get(statusUuid));
                     }
                 });
                 inboxRequest.getInbox().getProcessSearchCriteria().setStatus(actionableStatusUuid);
             } else {
-                inboxRequest.getInbox().getProcessSearchCriteria().setStatus(new ArrayList<>(StatusIdNameMap.values()));
+                inboxRequest.getInbox().getProcessSearchCriteria().setStatus(new ArrayList<>(statusIdNameMap.values()));
             }
         }else{
             inboxRequest.getInbox().getProcessSearchCriteria().setStatus(new ArrayList<>());
