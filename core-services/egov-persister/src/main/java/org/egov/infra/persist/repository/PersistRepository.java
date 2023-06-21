@@ -54,6 +54,7 @@ public class PersistRepository {
         try {
             if( ! rows.isEmpty()) {
                 log.info("Executing query : "+ query);
+                log.info("Executing rows : "+ rows);
                 jdbcTemplate.batchUpdate(query, rows);
                 log.info("Persisted {} row(s) to DB!", rows.size(), baseJsonPath);
             }
