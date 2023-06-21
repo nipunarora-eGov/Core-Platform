@@ -54,13 +54,16 @@ public class PersistRepository {
         try {
             if( ! rows.isEmpty()) {
                 log.info("Executing query : "+ query);
-                log.info("Executing rows : "+ rows);
+                for (Object row : rows){
+                    String val = objectMapper.writeValueAsString(row);
+                    log.info("Executing row : "+ val);
+                }
                 jdbcTemplate.batchUpdate(query, rows);
                 log.info("Persisted {} row(s) to DB!", rows.size(), baseJsonPath);
             }
         } catch (Exception ex) {
             log.error("Failed to persist {} row(s) using query: {}", rows.size(), query, ex);
-            throw ex;
+            //throw ex;
         }
     }
 
