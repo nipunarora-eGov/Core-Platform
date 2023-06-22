@@ -120,9 +120,9 @@ public class InboxServiceV2 {
     private List<Inbox> getInboxItems(InboxRequest inboxRequest, String indexName){
         List<BusinessService> businessServices = workflowService.getBusinessServices(inboxRequest);
         enrichActionableStatusesFromRole(inboxRequest, businessServices);
-        if(CollectionUtils.isEmpty(inboxRequest.getInbox().getProcessSearchCriteria().getStatus())){
-            return new ArrayList<>();
-        }
+//        if(CollectionUtils.isEmpty(inboxRequest.getInbox().getProcessSearchCriteria().getStatus())){
+//            return new ArrayList<>();
+//        }
         Map<String, Object> finalQueryBody = queryBuilder.getESQuery(inboxRequest, Boolean.TRUE);
         try {
             String q = mapper.writeValueAsString(finalQueryBody);
@@ -138,27 +138,31 @@ public class InboxServiceV2 {
         return inboxItemsList;
     }
 
+
     private void enrichActionableStatusesFromRole(InboxRequest inboxRequest, List<BusinessService> businessServices) {
         ProcessInstanceSearchCriteria processCriteria = inboxRequest.getInbox().getProcessSearchCriteria();
         String tenantId = inboxRequest.getInbox().getTenantId();
         processCriteria.setTenantId(tenantId);
-
-        Map<String, String> StatusIdNameMap = workflowService.getActionableStatusesForRole(inboxRequest.getRequestInfo(), businessServices,
+        ArrayList<String> status = (ArrayList<String>) inboxRequest.getInbox().getModuleSearchCriteria().get("status");
+        if (status != null && !status.isEmpty()) {
+            return;
+        }
+        //Added to handle empty status
+        inboxRequest.getInbox().getModuleSearchCriteria().remove("status");
+        HashMap<String, String> StatusIdNameMap = workflowService.getActionableStatusesForRole(inboxRequest.getRequestInfo(), businessServices,
                 inboxRequest.getInbox().getProcessSearchCriteria());
-        Map<String, String> statusIdNameMap = StatusIdNameMap.entrySet().stream().filter(entry -> entry.getValue() != null)
-                .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
-        log.info(statusIdNameMap.toString());
+        log.info(StatusIdNameMap.toString());
         List<String> actionableStatusUuid = new ArrayList<>();
-        if (statusIdNameMap.values().size() > 0) {
+        if (StatusIdNameMap.values().size() > 0) {
             if (!CollectionUtils.isEmpty(processCriteria.getStatus())) {
                 processCriteria.getStatus().forEach(statusUuid -> {
-                    if(statusIdNameMap.keySet().contains(statusUuid) && statusIdNameMap.get(statusUuid) != null){
-                        actionableStatusUuid.add(statusIdNameMap.get(statusUuid));
+                    if(StatusIdNameMap.keySet().contains(statusUuid)){
+                        actionableStatusUuid.add(statusUuid);
                     }
                 });
                 inboxRequest.getInbox().getProcessSearchCriteria().setStatus(actionableStatusUuid);
             } else {
-                inboxRequest.getInbox().getProcessSearchCriteria().setStatus(new ArrayList<>(statusIdNameMap.values()));
+                inboxRequest.getInbox().getProcessSearchCriteria().setStatus(new ArrayList<>(StatusIdNameMap.keySet()));
             }
         }else{
             inboxRequest.getInbox().getProcessSearchCriteria().setStatus(new ArrayList<>());
