@@ -117,7 +117,7 @@ public class WorkflowService {
             if(ObjectUtils.isEmpty(criteria.getBusinessService()))
                 throw new CustomException("EG_WF_BUSINESSSRV_ERR", "Providing business service is mandatory for nearing escalation count");
 
-            Integer slotPercentage = mdmsService.fetchSlotPercentageForNearingSla(requestInfo);
+            Integer slotPercentage = mdmsService.fetchSlotPercentageForNearingSla(requestInfo,criteria.getTenantId());
             Long maxBusinessServiceSla = businessMasterService.getMaxBusinessServiceSla(criteria);
             criteria.setSlotPercentageSlaLimit(maxBusinessServiceSla - slotPercentage * (maxBusinessServiceSla/100));
         }

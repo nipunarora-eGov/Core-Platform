@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.common.utils.MultiStateInstanceUtil;
 import org.egov.mdms.model.MasterDetail;
 import org.egov.mdms.model.MdmsCriteria;
 import org.egov.mdms.model.MdmsCriteriaReq;
@@ -42,7 +43,10 @@ public class MDMSService {
    private WorkflowConfig workflowConfig;
 
    private Map<String,Boolean> stateLevelMapping;
-   
+
+   @Autowired
+   private MultiStateInstanceUtil centralInstanceUtil;
+
    public static final String TENANTID_MDC_STRING = "TENANTID";
    
    
@@ -209,7 +213,7 @@ public class MDMSService {
         return new StringBuilder().append(config.getMdmsHost()).append(config.getMdmsEndPoint());
     }
     
-    public Integer fetchSlotPercentageForNearingSla(RequestInfo requestInfo) {
+    public Integer fetchSlotPercentageForNearingSla(RequestInfo requestInfo, String tenantId) {
         // master details for WF SLA module
         List<MasterDetail> masterDetails = new ArrayList<>();
 
@@ -219,7 +223,7 @@ public class MDMSService {
                 .moduleName(MDMS_COMMON_MASTERS).build());
 
         MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(wfModuleDtls)
-                .tenantId(config.getStateLevelTenantId())
+                .tenantId(centralInstanceUtil.getStateLevelTenant(tenantId))
                 .build();
 
         MdmsCriteriaReq mdmsCriteriaReq = MdmsCriteriaReq.builder().mdmsCriteria(mdmsCriteria)
