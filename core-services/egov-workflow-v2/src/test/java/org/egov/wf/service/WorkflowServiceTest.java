@@ -219,7 +219,7 @@ class WorkflowServiceTest {
     @Test
     void testCount() {
         when(this.worKflowRepository.getProcessInstancesCount((ProcessInstanceSearchCriteria) any())).thenReturn(3);
-        when(this.mDMSService.fetchSlotPercentageForNearingSla((RequestInfo) any())).thenReturn(1);
+        when(this.mDMSService.fetchSlotPercentageForNearingSla((RequestInfo) any(), (String) any())).thenReturn(1);
         when(this.businessMasterService.getMaxBusinessServiceSla((ProcessInstanceSearchCriteria) any())).thenReturn(1L);
         RequestInfo requestInfo = new RequestInfo();
 
@@ -246,7 +246,7 @@ class WorkflowServiceTest {
         processInstanceSearchCriteria.setToDate(1L);
         assertEquals(3, this.workflowService.count(requestInfo, processInstanceSearchCriteria).intValue());
         verify(this.worKflowRepository).getProcessInstancesCount((ProcessInstanceSearchCriteria) any());
-        verify(this.mDMSService).fetchSlotPercentageForNearingSla((RequestInfo) any());
+        verify(this.mDMSService).fetchSlotPercentageForNearingSla((RequestInfo) any(), (String) any());
         verify(this.businessMasterService).getMaxBusinessServiceSla((ProcessInstanceSearchCriteria) any());
         assertEquals(1L, processInstanceSearchCriteria.getSlotPercentageSlaLimit().longValue());
     }
@@ -255,7 +255,7 @@ class WorkflowServiceTest {
     @Test
     void testCountWithErrorCode() {
         when(this.worKflowRepository.getProcessInstancesCount((ProcessInstanceSearchCriteria) any())).thenReturn(3);
-        when(this.mDMSService.fetchSlotPercentageForNearingSla((RequestInfo) any())).thenReturn(1);
+        when(this.mDMSService.fetchSlotPercentageForNearingSla((RequestInfo) any(),(String) any())).thenReturn(1);
         when(this.businessMasterService.getMaxBusinessServiceSla((ProcessInstanceSearchCriteria) any()))
                 .thenThrow(new CustomException("Code", "An error occurred"));
         RequestInfo requestInfo = new RequestInfo();
@@ -282,7 +282,7 @@ class WorkflowServiceTest {
         processInstanceSearchCriteria.setTenantSpecifiStatus(new ArrayList<>());
         processInstanceSearchCriteria.setToDate(1L);
         assertThrows(CustomException.class, () -> this.workflowService.count(requestInfo, processInstanceSearchCriteria));
-        verify(this.mDMSService).fetchSlotPercentageForNearingSla((RequestInfo) any());
+        verify(this.mDMSService).fetchSlotPercentageForNearingSla((RequestInfo) any(), (String) any());
         verify(this.businessMasterService).getMaxBusinessServiceSla((ProcessInstanceSearchCriteria) any());
     }
 

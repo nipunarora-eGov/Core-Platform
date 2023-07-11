@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.common.utils.MultiStateInstanceUtil;
 import org.egov.mdms.model.MasterDetail;
 import org.egov.mdms.model.MdmsCriteria;
 import org.egov.mdms.model.MdmsCriteriaReq;
@@ -44,6 +45,10 @@ public class MDMSService {
 
    private Map<String,Boolean> stateLevelMapping;
 
+   @Autowired
+   private MultiStateInstanceUtil centralInstanceUtil;
+
+
     @Autowired
     public MDMSService(WorkflowConfig config, ServiceRequestRepository serviceRequestRepository, WorkflowConfig workflowConfig) {
         this.config = config;
@@ -63,7 +68,6 @@ public class MDMSService {
 
         Object mdmsData = getBusinessServiceMDMS();
         List<HashMap<String, Object>> configs = JsonPath.read(mdmsData,JSONPATH_BUSINESSSERVICE_STATELEVEL);
-
 
         for (Map map : configs){
 
@@ -93,7 +97,7 @@ public class MDMSService {
      * @return
      */
     public Object getBusinessServiceMDMS(){
-    	
+
     	MDC.put(WorkflowConstants.TENANTID_MDC_STRING, workflowConfig.getStateLevelTenantId());
         MdmsCriteriaReq mdmsCriteriaReq = getBusinessServiceMDMSRequest(new RequestInfo(), workflowConfig.getStateLevelTenantId());
         Object result = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
@@ -205,7 +209,7 @@ public class MDMSService {
         return new StringBuilder().append(config.getMdmsHost()).append(config.getMdmsEndPoint());
     }
     
-    public Integer fetchSlotPercentageForNearingSla(RequestInfo requestInfo) {
+    public Integer fetchSlotPercentageForNearingSla(RequestInfo requestInfo, String tenantId) {
         // master details for WF SLA module
         List<MasterDetail> masterDetails = new ArrayList<>();
 
@@ -215,7 +219,7 @@ public class MDMSService {
                 .moduleName(MDMS_COMMON_MASTERS).build());
 
         MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(wfModuleDtls)
-                .tenantId(config.getStateLevelTenantId())
+                .tenantId(centralInstanceUtil.getStateLevelTenant(tenantId))
                 .build();
 
         MdmsCriteriaReq mdmsCriteriaReq = MdmsCriteriaReq.builder().mdmsCriteria(mdmsCriteria)
