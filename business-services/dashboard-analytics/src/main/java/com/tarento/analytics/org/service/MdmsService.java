@@ -7,6 +7,7 @@ import com.tarento.analytics.constant.Constants;
 import com.tarento.analytics.service.impl.RestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.tarento.analytics.constant.Constants.MDMSKeys.TENANTID_MDC_STRING;
 import static com.tarento.analytics.constant.Constants.MDMS_REQUESTINFO;
 import static com.tarento.analytics.constant.Constants.TENANTID_PLACEHOLDER;
 
@@ -44,6 +46,10 @@ public class MdmsService {
     public void loadMdmsService() throws Exception{
 
         String REQUEST_INFO_STR = MDMS_REQUESTINFO.replace(TENANTID_PLACEHOLDER,stateLevelTenantId);
+
+        // Adding in MDC so that tracer can add it in header
+        MDC.put(TENANTID_MDC_STRING, stateLevelTenantId);
+
         JsonNode requestInfo = mapper.readTree(REQUEST_INFO_STR);
         try {
             JsonNode response = restService.post(mdmsServiceHost + mdmsSearchEndpoint, "", requestInfo);
