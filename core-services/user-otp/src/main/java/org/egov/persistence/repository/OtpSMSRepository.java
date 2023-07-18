@@ -14,8 +14,10 @@ import org.springframework.stereotype.Service;
 import javax.validation.constraints.NotNull;
 import java.util.Map;
 
+
 import static java.lang.String.format;
 
+import org.egov.common.utils.MultiStateInstanceUtil;
 
 @Service
 @Slf4j
@@ -38,6 +40,9 @@ public class OtpSMSRepository {
     private LocalizationService localizationService;
 
     @Autowired
+    private MultiStateInstanceUtil centralInstanceUtil;
+
+    @Autowired
     public OtpSMSRepository(CustomKafkaTemplate<String, SMSRequest> kafkaTemplate,
                             @Value("${sms.topic}") String smsTopic) {
         this.kafkaTemplate = kafkaTemplate;
@@ -48,7 +53,8 @@ public class OtpSMSRepository {
     public void send(OtpRequest otpRequest, String otpNumber) {
 		Long currentTime = System.currentTimeMillis() + maxExecutionTime;
 		final String message = getMessage(otpNumber, otpRequest);
-        kafkaTemplate.send(smsTopic, new SMSRequest(otpRequest.getMobileNumber(), message, Category.OTP, currentTime));
+        String updatedTopic = centralInstanceUtil.getStateSpecificTopicName(otpRequest.getTenantId(), smsTopic);
+        kafkaTemplate.send(updatedTopic, new SMSRequest(otpRequest.getMobileNumber(), message, Category.OTP, currentTime));
     }
 
     private String getMessage(String otpNumber, OtpRequest otpRequest) {
