@@ -2,7 +2,7 @@ import { AddFilled, Button, Header, InboxSearchComposer, Loader, Dropdown } from
 import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
-import { Config } from "../../configs/searchMDMSConfig";
+import { Config as Configg } from "../../configs/searchMDMSConfig";
 import _, { drop } from "lodash";
 
 const toDropdownObj = (master = "", mod = "") => {
@@ -39,7 +39,7 @@ const sampleSchemaResponse = {
           active: {
             type: "boolean",
           },
-          desc: {
+          d: {
             type: "string",
           },
         },
@@ -76,7 +76,7 @@ const sampleSchemaResponse = {
           active: {
             type: "boolean",
           },
-          description: {
+          de: {
             type: "string",
           },
         },
@@ -113,7 +113,7 @@ const sampleSchemaResponse = {
           active: {
             type: "boolean",
           },
-          description: {
+          des: {
             type: "string",
           },
         },
@@ -150,7 +150,7 @@ const sampleSchemaResponse = {
           active: {
             type: "boolean",
           },
-          description: {
+          desc: {
             type: "string",
           },
         },
@@ -167,6 +167,7 @@ const sampleSchemaResponse = {
 };
 
 const MDMSSearchv2 = () => {
+  let Config = _.clone(Configg)
   const { t } = useTranslation();
   const history = useHistory();
   const tenant = Digit.ULBService.getStateId();
@@ -221,7 +222,6 @@ const MDMSSearchv2 = () => {
 
   useEffect(() => {
     setModuleOptions(dropdownData?.[masterName?.name])
-    setModuleName(null)
   }, [masterName])
 
   useEffect(() => {
@@ -245,22 +245,17 @@ const MDMSSearchv2 = () => {
           });
         }
       });
+
       Config.sections.search.uiConfig.fields[0].populators.options = dropDownOptions;
 
       setUpdatedConfig(Config)
     }
   }, [currentSchema]);
-  
 
- 
-
-  //when we get dropdownData we'll populate master dropdown
-  //when a user selects master name we'll populate module dropdown and setCurrentSchema
-  console.log(updatedConfig);
   if (isLoading) return <Loader />;
   return (
     <React.Fragment>
-        <Header className="works-header-search">{t(updatedConfig?.label)}</Header>
+        <Header className="works-header-search">{t(Config?.label)}</Header>
       <div className="jk-header-btn-wrapper">
         <Dropdown
           option={masterOptions}
@@ -270,6 +265,8 @@ const MDMSSearchv2 = () => {
           selected={masterName}
           select={(e) => {
             setMasterName(e);
+            setModuleName(null)
+            setUpdatedConfig(null)
           }}
           t={t}
           placeholder={t("WBH_MODULE_NAME")}
@@ -286,21 +283,21 @@ const MDMSSearchv2 = () => {
           t={t}
           placeholder={t("WBH_MODULE_NAME")}
         />
-        {Digit.Utils.didEmployeeHasRole(updatedConfig?.actionRole) && (
+        {Digit.Utils.didEmployeeHasRole(Config?.actionRole) && (
           <Button
-            label={t(updatedConfig?.actionLabel)}
+            label={t(Config?.actionLabel)}
             variation="secondary"
             icon={<AddFilled style={{ height: "20px", width: "20px" }} />}
             onButtonClick={() => {
-              history.push(`/${window?.contextPath}/employee/${updatedConfig?.actionLink}`);
+              history.push(`/${window?.contextPath}/employee/${Config?.actionLink}`);
             }}
             type="button"
           />
         )}
       </div>
-      <div className="inbox-search-wrapper">
+      {updatedConfig && moduleName && masterName && <div className="inbox-search-wrapper">
         <InboxSearchComposer configs={updatedConfig}></InboxSearchComposer>
-      </div>
+      </div>}
     </React.Fragment>
   );
 };
