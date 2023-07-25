@@ -179,7 +179,7 @@ const MDMSSearchv2 = () => {
   const [masterOptions,setMasterOptions] = useState([])
   const [moduleOptions,setModuleOptions] = useState([])
   const [updatedConfig,setUpdatedConfig] = useState(null)
-  const { isLoading, data: dropdownData } = Digit.Hooks.useCustomMdmsv2({
+  const { isLoading, data: dropdownData } = Digit.Hooks.useCustomAPIHook({
     url: "/mdms-v2/schema/v1/_search",
     params: {},
     body: {

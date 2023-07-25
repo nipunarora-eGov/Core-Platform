@@ -30,7 +30,7 @@ import useWorkflowDetails from "./workflow";
 import useCustomAPIHook from "./useCustomAPIHook";
 import useCustomAPIMutationHook from "./useCustomAPIMutationHook";
 import useUpdateCustom from "./useUpdateCustom";
-import useCustomMdmsv2 from "./useCustomMDMSv2";
+
 
 import useComplaintDetails from "./pgr/useComplaintDetails";
 import { useComplaintsList, useComplaintsListByMobile } from "./pgr/useComplaintList";
@@ -200,7 +200,6 @@ const Hooks = {
   useRouteSubscription,
   useCustomAPIHook,
   useCustomAPIMutationHook,
-  useCustomMdmsv2,
   useWorkflowDetailsV2,
   useUpdateCustom,
   useCustomMDMS,
