@@ -1,4 +1,4 @@
-import { Loader, Header, Toast, Card, ActionBar, SubmitBar, CardLabelError } from "@egovernments/digit-ui-react-components";
+import { Loader, Header, Toast, Card, Button,ActionBar,AddFilled, SubmitBar, CardLabelError } from "@egovernments/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
@@ -38,24 +38,21 @@ const uiSchema = {
       className: "object-jk",
     },
   },
-  "ui:ArrayFieldTemplate": {
-    props: {
-      className: "array-jk",
-    },
-  },
+ 
 };
 
 function ArrayFieldItemTemplate(props) {
-  const { children, className } = props;
+  const { children, className ,index,onDropIndexClick} = props;
   return (
     <div className={className}>
       {children}
-
+{/* commented out since it has some issue 
       {props.hasRemove && (
-        <button type="button" onClick={props.onDropIndexClick}>
+        <button type="button" onClick={()=>onDropIndexClick(index)}>
           rem
         </button>
       )}
+      */}
     </div>
   );
 }
@@ -76,13 +73,21 @@ function ArrayFieldTitleTemplate(props) {
   return null;
 }
 function ArrayFieldTemplate(props) {
+  const { t } = useTranslation();
+console.log(props,'propsarray');
   return (
     <div>
-      {props.items.map((element) => element.children)}
+      {props.items.map((element,index) => {return (<span>
+        <ArrayFieldItemTemplate {...element}></ArrayFieldItemTemplate>
+      </span>)})}
       {props.canAdd && (
-        <button type="button" onClick={props.onAddClick}>
-          add
-        </button>
+        <Button
+        label={t("Add Eligibility Criteria")}
+        variation="secondary"
+        icon={<AddFilled style={{ height: "20px", width: "20px" }} />}
+        onButtonClick={props.onAddClick}
+        type="button"
+      />
       )}
     </div>
   );
@@ -107,27 +112,31 @@ function ObjectFieldTemplate(props) {
 
 function CustomFieldTemplate(props) {
   const { id, classNames, style, label, help, required, description, errors, children } = props;
+  console.log(props,"all")
   return (
+    <span>
     <div className={classNames} style={style}>
       <label htmlFor={id} className="control-label">
         {label}
         {required ? "*" : null}
       </label>
       {description}
-      {children}
+      <span>{children}
       {errors}
       {help}
+      </span>
     </div>
+    </span>
   );
 }
 
 const FieldErrorTemplate = (props) => {
   const { errors } = props;
   console.log("errors", errors);
-  return errors && errors.length > 0 && errors?.[0]?.stack ? <CardLabelError>{errors?.[0]?.stack}</CardLabelError> : null;
+  return errors && errors.length > 0 && errors?.[0] ? <CardLabelError>{errors?.[0]}</CardLabelError> : null;
 };
 
-const DigitJSONForm = ({ schema, onSubmit, uiSchema: inputUiSchema, showToast, showErrorToast }) => {
+const DigitJSONForm = ({ schema, onSubmit, uiSchema: inputUiSchema, showToast, showErrorToast,formData={} ,onFormChange,onFormError}) => {
   const { t } = useTranslation();
 
   const onSubmitV2 = ({ formData }) => {
@@ -143,7 +152,12 @@ const DigitJSONForm = ({ schema, onSubmit, uiSchema: inputUiSchema, showToast, s
         <Form
           schema={schema?.definition}
           validator={validator}
-          onChange={console.log("changed")}
+          liveValidate
+          focusOnFirstError={true}
+          showErrorList={false}
+          formData={formData}
+          noHtml5Validate={true}
+          onChange={onFormChange}
           onSubmit={onSubmitV2}
           templates={{
             FieldErrorTemplate,
@@ -158,7 +172,7 @@ const DigitJSONForm = ({ schema, onSubmit, uiSchema: inputUiSchema, showToast, s
             arrayMinItems: { populate: "requiredOnly" },
           }}
           uiSchema={{ ...uiSchema, ...inputUiSchema }}
-          onError={console.log("errors")}
+          onError={onFormError}
         >
           <ActionBar>
             <SubmitBar label={t("WBH_ADD_MDMS_ADD_ACTION")} submit="submit" />
