@@ -53,22 +53,12 @@
             /* align-self: center; */
             width: 13rem;
             line-height: 3rem;
-
           }
 
           .form-control {
             width: 28rem;
             @extend .light-input-border;
             @extend .employee-card-input;
-
-            .digit__control {
-              border: 0px;
-            }
-
-          }
-
-          textarea.form-control {
-            height: 5rem;
           }
 
           &.field-string {
@@ -236,7 +226,6 @@
     transform: rotate(360deg);
   }
 }
-
 .no-data-found {
   height: 100%;
   width: 100%;
@@ -244,7 +233,6 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-
   .digit-error-msg {
     margin-top: 2rem;
   }

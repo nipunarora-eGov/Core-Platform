@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 const ROLES = {
   LOCALISATION: ["EMPLOYEE", "SUPERUSER"],
-  MDMS: ["MDMS_ADMIN", "EMPLOYEE", "SUPERUSER"],
+  MDMS: ["MDMS_ADMIN","EMPLOYEE","SUPERUSER"],
   DSS: ["STADMIN"],
 };
 
@@ -27,17 +27,16 @@ const WorkbenchCard = () => {
       label: t("ACTION_TEST_MDMS"),
       link: `/${window?.contextPath}/employee/workbench/mdms-search-v2`,
       roles: ROLES.MDMS,
-    },
+    }
+    ,
     {
-      label: t("Sample Create master"),
+      label: t("Sample master"),
       link: `/${window?.contextPath}/employee/workbench/mdms-add-v2?moduleName=common-masters&masterName=Sample`,
       roles: ROLES.MDMS,
-    },
-    {
-      label: t("Sample Search master"),
-      link: `/${window?.contextPath}/employee/workbench/mdms-search-v2?masterName=common-masters&moduleName=Sample`,
-      roles: ROLES.MDMS,
-    },
+    }
+
+
+
   ];
 
   links = links.filter((link) => (link?.roles && link?.roles?.length > 0 ? Digit.Utils.didEmployeeHasAtleastOneRole(link?.roles) : true));
@@ -45,10 +44,12 @@ const WorkbenchCard = () => {
   const propsForModuleCard = {
     Icon: <WorksMgmtIcon />,
     moduleName: t("ACTION_TEST_WORKBENCH"),
-    kpis: [],
+    kpis: [
+    ],
     links: links,
   };
   return <EmployeeModuleCard {...propsForModuleCard} />;
 };
 
 export default WorkbenchCard;
+
